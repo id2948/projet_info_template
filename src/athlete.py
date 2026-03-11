@@ -45,3 +45,9 @@ class Athlete(Individu):
         self.date_de_naissance = date_de_naissance
         self.poids = poids
         self.taille = taille
+
+    def __str__(self, nom: str, prenom: str) -> str:
+        return f"{self.nom} {self.prenom}"
+
+    def filtre_id(self, id) -> Athlete:
+        for i in 
