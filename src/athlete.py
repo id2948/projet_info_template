@@ -1,7 +1,7 @@
-from individu import Individu
+from participant import Participant
 
 
-class Athlete(Individu):
+class Athlete(Participant):
     """Modélise les athlètes parmi les individu de la compétition.
 
     Parameters
@@ -30,13 +30,14 @@ class Athlete(Individu):
         id: str,
         nom: str,
         prenom: str,
-        date_de_naissance: date,
-        poids: float,
-        taille: float,
+        date_naissance: date | None,
+        nationalite: str| None,
+        poids: float | None,
+        taille: float| None,
+        role: str| None
     ) -> None:
-        Individu.__init__(self, id, nom, prenom)
-        if not isinstance(date_de_naissance, date):
-            raise TypeError("'date_de_naissance' doit être une instance de date")
+        Participant.__init__(self, id, nom, date_naissance, nationalite)
+
         if not isinstance(poids, float):
             raise TypeError("'poids' doit être une instance de float")
         if not isinstance(taille, float):
