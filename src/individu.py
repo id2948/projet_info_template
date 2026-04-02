@@ -20,7 +20,8 @@ class Individu:
             raise TypeError("'nom' doit être une instance de str")
         if not isinstance(prenom, str):
             raise TypeError("'prenom' doit être une instance de str")
-
+ 
+        
         self.id = id
         self.nom = nom
         self.prenom = prenom
