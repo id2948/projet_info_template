@@ -2,7 +2,7 @@ from src.Common.utils import print_timings
 
 
 @print_timings
-def parse_players_csv(filepath: str, sep: str = ";") -> list:
+def parse_csv(filepath: str, sep: str = ";") -> list:
     players = []
 
     with open(filepath, "r", encoding="utf-8") as f:
@@ -14,3 +14,8 @@ def parse_players_csv(filepath: str, sep: str = ";") -> list:
             players.append(player)
 
     return players
+
+
+
+
+data = parse_csv("data/basketball/player.csv", sep=",")
