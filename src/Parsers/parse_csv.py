@@ -18,4 +18,3 @@ def parse_csv(filepath: str, sep: str = ";") -> list:
 
 
 
-data = parse_csv("data/basketball/player.csv", sep=",")
