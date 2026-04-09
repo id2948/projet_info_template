@@ -9,3 +9,10 @@ sport_selected = [
 ]
 
 sports_names = [s.nom for s in sport_selected]
+
+choice = input(f"Choisissez un sport {sports_names} : ")
+
+if choice not in sports_names:
+    raise ValueError(f"'{choice}' n'est pas un sport valide. Choisissez parmi {sports_names}")
+
+sport = next(s for s in sport_selected if s.nom == choice)
