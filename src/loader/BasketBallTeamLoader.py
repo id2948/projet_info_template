@@ -1,5 +1,5 @@
 from src.Parsers.parse_csv import parse_csv
-from equipe import Equipe
+from team import Equipe
 
 
 class BasketballTeamLoader:
@@ -22,13 +22,5 @@ class BasketballTeamLoader:
         return Equipe(
             id=row["id"],
             nom=row["full_name"],
-            location=self._build_location(row)
+            location=row["city"]
         )
-
-    def _build_location(self, row: dict) -> str:
-        city = row.get("city", "")
-        state = row.get("state", "")
-
-        if city and state:
-            return f"{city}, {state}"
-        return city or state or "Unknown"
