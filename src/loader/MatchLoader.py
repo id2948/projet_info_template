@@ -1,17 +1,15 @@
-import pandas as pd
-
+from src.sport import Sport
+from src.Model.Match import Match
 
 class MatchLoader:
-    def load_all_matches(self, selected_sport: Sport) -> pd.DataFrame:
-        if selected_sport == Sport.FOOTBALL:
-            return FootballMatchLoader().load_all_matches()
-        elif selected_sport == Sport.TENNIS:
-            return TennisMatchLoader().load_all_matches()
-        elif selected_sport == Sport.LOL:
-            return LOLMatchLoader().load_all_matches()
-        elif selected_sport == Sport.BASKETBALL:
-            return BasketballMatchLoader().load_all_matches()
-        elif selected_sport == Sport.VOLLEY:
-            return VolleyMatchLoader().load_all_matches()
-        else:
-            raise Exception("Sport non supporté")
+    _loaders = {}
+
+    @classmethod
+    def register(cls, sport: Sport, loader):
+        cls._loaders[sport] = loader
+
+    def load_all_matches(self, selected_sport: Sport) -> list[Match]:
+        loader = self._loaders.get(selected_sport)
+        if loader is None:
+            raise Exception(f"Aucun loader enregistré pour {selected_sport}")
+        return loader().load_all_matches()
