@@ -16,9 +16,9 @@ class VolleyMatchLoader:
             "equipe_2": df["equipe_2"],
             "score_1":  df["set_country_1"],
             "score_2":  df["set_country_2"],
-            "sport":    Sport.VOLLEY.value,
+            "sport":    "volley",
             "stage":    df["stage"],
         })
         return [Match(**r) for r in df.to_dict("records")]
 
-MatchLoader.register(Sport.VOLLEY, VolleyMatchLoader)
+MatchLoader.register("volley", VolleyMatchLoader)

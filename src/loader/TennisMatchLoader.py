@@ -14,11 +14,11 @@ class TennisMatchLoader:
             "equipe_2":     df["loser_id"].astype(str),
             "score_1":      1,
             "score_2":      0,
-            "sport":        Sport.TENNIS.value,
+            "sport":        "tennis",
             "tourney_name": df["tourney_name"],
             "surface":      df["surface"],
             "round":        df["round"],
         })
         return [Match(**r) for r in df.to_dict("records")]
 
-MatchLoader.register(Sport.TENNIS, TennisMatchLoader)
+MatchLoader.register("tennis", TennisMatchLoader)

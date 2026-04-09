@@ -12,10 +12,10 @@ class BasketballMatchLoader:
             "equipe_2":    df["team_id_away"].astype(str),
             "score_1":     df["pts_home"],
             "score_2":     df["pts_away"],
-            "sport":       Sport.BASKETBALL.value,
+            "sport":       "basketball",
             "season":      df["season"],
             "season_type": df["season_type"],
         })
         return [Match(**r) for r in df.to_dict("records")]
 
-MatchLoader.register(Sport.BASKETBALL, BasketballMatchLoader)
+MatchLoader.register("basketball", BasketballMatchLoader)

@@ -12,11 +12,11 @@ class LOLMatchLoader:
             "equipe_2": df["team_red"],
             "score_1":  df["kills_team_blue"],
             "score_2":  df["kills_team_red"],
-            "sport":    Sport.LOL.value,
+            "sport":    "LOL",
             "patch":    df["patch"],
             "week":     df["week"],
             "winner":   df["winner"],
         })
         return [Match(**r) for r in df.to_dict("records")]
 
-MatchLoader.register(Sport.LOL, LOLMatchLoader)
+MatchLoader.register("LOL", LOLMatchLoader)

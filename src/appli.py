@@ -1,18 +1,44 @@
+import pandas as pd
+from src.Parsers.parse_csv import parse_csv
+from src.Analysis.pandas.GoatFinder import find_the_goat_in_df
+from src.Analysis.homemade.GoatFinder import find_the_goat
 from src.sport import Sport
+from src.loader.MatchLoader import MatchLoader
 
-sport_selected = [
-    Sport("football"),
-    Sport("LOL"),
-    Sport("tennis"),
-    Sport("volley"),
-    Sport("basketball")
-]
+import src.loader.BasketballMatchLoader
+import src.loader.FootballMatchLoader
+import src.loader.LoLMatchLoader
+import src.loader.TennisMatchLoader
+import src.loader.VolleyMatchLoader
 
-sports_names = [s.nom for s in sport_selected]
+loader = MatchLoader()
 
-choice = input(f"Choisissez un sport {sports_names} : ")
+# Test Basketball
+print("=== BASKETBALL ===")
+matchs = loader.load_all_matches(Sport.BASKETBALL)
+for m in matchs[:3]:
+    print(m)
 
-if choice not in sports_names:
-    raise ValueError(f"'{choice}' n'est pas un sport valide. Choisissez parmi {sports_names}")
+# Test Football
+print("\n=== FOOTBALL ===")
+matchs = loader.load_all_matches(Sport.FOOTBALL)
+for m in matchs[:3]:
+    print(m)
 
-sport = next(s for s in sport_selected if s.nom == choice)
+# Test LoL
+print("\n=== LOL ===")
+matchs = loader.load_all_matches(Sport.LOL)
+for m in matchs[:3]:
+    print(m)
+
+# Test Tennis
+print("\n=== TENNIS ===")
+matchs = loader.load_all_matches(Sport.TENNIS)
+for m in matchs[:3]:
+    print(m)
+
+# Test Volley
+print("\n=== VOLLEY ===")
+matchs = loader.load_all_matches(Sport.VOLLEY)
+for m in matchs[:3]:
+    print(m)

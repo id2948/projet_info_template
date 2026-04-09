@@ -12,10 +12,10 @@ class FootballMatchLoader:
             "equipe_2":  df["away_team_api_id"].astype(str),
             "score_1":   df["home_team_goal"],
             "score_2":   df["away_team_goal"],
-            "sport":     Sport.FOOTBALL.value,
+            "sport":     "football",
             "league_id": df["league_id"],
             "stage":     df["stage"],
         })
         return [Match(**r) for r in df.to_dict("records")]
 
-MatchLoader.register(Sport.FOOTBALL, FootballMatchLoader)
+MatchLoader.register("football", FootballMatchLoader)

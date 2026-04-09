@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+
 @dataclass
 class Match:
     # Communs
@@ -12,22 +13,22 @@ class Match:
     sport:    str
 
     # Basketball
-    season:       Optional[str]   = None
-    season_type:  Optional[str]   = None
+    season:       Optional[str] = None
+    season_type:  Optional[str] = None
 
     # Football
     league_id:    Optional[float] = None
-    stage:        Optional[str]   = None  # aussi volley
+    stage:        Optional[str] = None  # aussi volley
 
     # LoL
-    patch:        Optional[str]   = None
-    week:         Optional[int]   = None
-    winner:       Optional[str]   = None
+    patch:        Optional[str] = None
+    week:         Optional[int] = None
+    winner:       Optional[str] = None
 
     # Tennis
-    tourney_name: Optional[str]   = None
-    surface:      Optional[str]   = None
-    round:        Optional[str]   = None
+    tourney_name: Optional[str] = None
+    surface:      Optional[str] = None
+    round:        Optional[str] = None
 
     def __str__(self):
         return (f"[{self.sport}] {self.date} | "
