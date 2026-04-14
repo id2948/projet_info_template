@@ -1,5 +1,6 @@
 from src.sport import Sport
 from src.loader.MatchLoader import MatchLoader
+from src.loader.JoueurLoader import JoueurLoader
 
 import src.loader.BasketballMatchLoader
 import src.loader.FootballMatchLoader
@@ -7,50 +8,35 @@ import src.loader.LoLMatchLoader
 import src.loader.TennisMatchLoader
 import src.loader.VolleyMatchLoader
 
-loader = MatchLoader()
+import src.loader.BasketballJoueurLoader
+import src.loader.FootballJoueurLoader
+import src.loader.LoLJoueurLoader
+import src.loader.TennisJoueurLoader
+import src.loader.VolleyJoueurLoader
+
+from src.menu.match_menu import run_match_menu
+from src.menu.joueur_menu import run_joueur_menu
+
+SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
+CATEGORIES_DISPONIBLES = ["match", "joueur"]  # à étendre : club, coach...
 
 print("=== Bienvenue dans la base de données sportive ===\n")
 
 # Choix du sport
-print("Sports disponibles : basketball, football, LOL, tennis, volley")
+print(f"Sports disponibles : {', '.join(SPORTS_DISPONIBLES)}")
 sport_choisi = input("Quel sport ? ").strip()
 
-# Chargement des matchs
-matchs = loader.load_all_matches(Sport(sport_choisi))
-print(f"\n{len(matchs)} matchs chargés pour {sport_choisi}\n")
+if sport_choisi not in SPORTS_DISPONIBLES:
+    print(f"Sport '{sport_choisi}' non reconnu.")
+    exit()
 
-# Choix de la recherche
-print("Que voulez-vous chercher ?")
-print("1 - Tous les matchs d'une équipe")
-print("2 - Matchs entre deux équipes")
-print("3 - Matchs à une date précise")
-print("4 - Matchs où le score dépasse un certain seuil")
-choix = input("\nVotre choix : ").strip()
+# Choix de la catégorie
+print(f"\nCatégories disponibles : {', '.join(CATEGORIES_DISPONIBLES)}")
+categorie = input("Quelle catégorie ? ").strip().lower()
 
-if choix == "1":
-    equipe = input("Nom de l'équipe : ").strip()
-    resultats = [m for m in matchs if equipe in m.equipe_1 or equipe in m.equipe_2]
-
-elif choix == "2":
-    equipe1 = input("Équipe 1 : ").strip()
-    equipe2 = input("Équipe 2 : ").strip()
-    resultats = [m for m in matchs if
-                (equipe1 in m.equipe_1 and equipe2 in m.equipe_2) or
-                (equipe2 in m.equipe_1 and equipe1 in m.equipe_2)]
-
-elif choix == "3":
-    date = input("Date (ex: 2022-10-18) : ").strip()
-    resultats = [m for m in matchs if date in m.date]
-
-elif choix == "4":
-    seuil = float(input("Score minimum : ").strip())
-    resultats = [m for m in matchs if m.score_1 >= seuil or m.score_2 >= seuil]
-
+if categorie == "match":
+    run_match_menu(Sport(sport_choisi))
+elif categorie == "joueur":
+    run_joueur_menu(Sport(sport_choisi))
 else:
-    print("Choix invalide")
-    resultats = []
-
-# Affichage des résultats
-print(f"\n{len(resultats)} résultat(s) trouvé(s) :\n")
-for m in resultats[:20]:
-    print(m)
+    print(f"Catégorie '{categorie}' non reconnue.")

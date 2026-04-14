@@ -1,35 +1,35 @@
 import pandas as pd
-from src.sport import Sport
-from src.Match import Match
+from src.Model.Match import Match
+from src.loader.MatchLoader import MatchLoader
 
 
 class BasketballMatchLoader:
+    """Charge les matchs de basketball"""
+
+    DATA_GAMES = "data/basketball/game.csv"
+    DATA_TEAMS = "data/basketball/team.csv"
+
     def load_all_matches(self) -> list[Match]:
-        df = pd.read_csv("data/basketball/game.csv")
-<<<<<<< HEAD
+        df_games = pd.read_csv(self.DATA_GAMES)
+        df_teams = pd.read_csv(self.DATA_TEAMS)
+
+        # Dictionnaire id -> nom complet de l'équipe
+        teams = dict(zip(df_teams["id"].astype(str), df_teams["full_name"]))
+
         df = pd.DataFrame({
-            "date":        df["game_date"],
-            "equipe_1":    df["team_id_home"].astype(str),
-            "equipe_2":    df["team_id_away"].astype(str),
-            "score_1":     df["pts_home"],
-            "score_2":     df["pts_away"],
+            "date":        df_games["game_date"],
+            "equipe_1":    df_games["team_id_home"].astype(str).map(teams).fillna(
+                df_games["team_id_home"].astype(str)),
+            "equipe_2":    df_games["team_id_away"].astype(str).map(teams).fillna(
+                df_games["team_id_away"].astype(str)),
+            "score_1":     df_games["pts_home"],
+            "score_2":     df_games["pts_away"],
             "sport":       "basketball",
-            "season":      df["season"],
-            "season_type": df["season_type"],
+            "season":      df_games["season"],
+            "season_type": df_games["season_type"],
         })
+
         return [Match(**r) for r in df.to_dict("records")]
+
 
 MatchLoader.register("basketball", BasketballMatchLoader)
-=======
-
-        df = pd.DataFrame({
-            "equipe_1": df["team_id_home"].astype(str),
-            "equipe_2": df["team_id_away"].astype(str),
-            "score_1": df["pts_home"],
-            "score_2": df["pts_away"],
-            "date": df["game_date"],              # optionnel
-            "competition": df["season_type"],     # optionnel
-        })
-
-        return [Match(**r) for r in df.to_dict("records")]
->>>>>>> c58353b99a41b2fec2e0af0d498193d9a207d15d
