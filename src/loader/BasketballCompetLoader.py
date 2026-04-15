@@ -1,5 +1,5 @@
 from competition import Competition
-from Parsers.parse_csv import parse_csv  # adapte selon ton projet
+from Parsers.parse_csv import parse_csv 
 
 
 class CompetitionLoader:
@@ -12,7 +12,6 @@ class CompetitionLoader:
         self.filepath = filepath
 
     def charger_competitions(self) -> dict[str, Competition]:
-        # --- lecture du fichier ---
         data = parse_csv(self.filepath, sep=",")
 
         competitions: dict[str, Competition] = {}
