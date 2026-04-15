@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 from src.sport import Sport
+from src.loader import MatchLoader
 
 @dataclass
 class Match:
@@ -97,7 +98,7 @@ def _matchs_par_score(matchs: list[Match]) -> None:
     _afficher(resultats)
 
 
-def _stats_agregeees(matchs: list[Match], sport: Sport) -> None:  # noqa: F821
+def _stats_agregeees(matchs: list[Match], sport: Sport) -> None:
     if not matchs:
         print("Aucun match disponible.")
         return

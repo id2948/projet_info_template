@@ -1,6 +1,7 @@
 from src.sport import Sport
 from src.Model.Match import Match
 
+
 class MatchLoader:
     _loaders = {}
 
