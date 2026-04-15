@@ -4,10 +4,6 @@ from src.loader.MatchLoader import MatchLoader
 
 
 class BasketballMatchLoader:
-    """Charge les matchs de basketball"""
-
-    DATA_GAMES = "data/basketball/game.csv"
-    DATA_TEAMS = "data/basketball/team.csv"
 
     def load_all_matches(self) -> list[Match]:
         df_games = pd.read_csv(self.DATA_GAMES)
