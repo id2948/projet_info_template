@@ -6,7 +6,6 @@ from src.Model.Match import Match
 def run_match_menu(sport: Sport) -> None:
     """Menu principal pour tout ce qui concerne les matchs."""
 
-    # Chargement des matchs pour le sport choisi
     loader = MatchLoader()
     matchs = loader.load_all_matches(sport)
     print(f"\n{len(matchs)} matchs chargés pour {sport.nom}\n")
@@ -71,7 +70,6 @@ def _stats_agregeees(matchs: list[Match], sport: Sport) -> None:
         print("Aucun match disponible.")
         return
 
-    # Filtre optionnel sur une équipe
     equipe_filtre = input("Filtrer sur une équipe ? (laissez vide pour tout) : ").strip()
     if equipe_filtre:
         matchs_filtres = [m for m in matchs if equipe_filtre.lower() in m.equipe_1.lower()
@@ -85,14 +83,12 @@ def _stats_agregeees(matchs: list[Match], sport: Sport) -> None:
         equipe_filtre = None
         titre = sport.nom
 
-    # Match le plus prolifique
     match_record = max(matchs_filtres, key=lambda m: (m.score_1 or 0) + (m.score_2 or 0))
 
     print(f"\n=== Statistiques des matchs — {titre} ===\n")
     print(f"  Nombre total de matchs   : {len(matchs_filtres)}")
     print(f"  Match le plus prolifique : {match_record}")
 
-    # Stats spécifiques à une équipe
     if equipe_filtre:
         victoires = 0
         defaites = 0
@@ -100,14 +96,12 @@ def _stats_agregeees(matchs: list[Match], sport: Sport) -> None:
         points_marques = []
         points_encaisses = []
 
-        # Tri par date pour la série de victoires
         matchs_tries = sorted(matchs_filtres, key=lambda m: str(m.date))
 
         serie_actuelle = 0
         serie_max = 0
 
         for m in matchs_tries:
-            # Détermine si l'équipe est equipe_1 ou equipe_2
             if equipe_filtre.lower() in m.equipe_1.lower():
                 marques = m.score_1 or 0
                 encaisses = m.score_2 or 0

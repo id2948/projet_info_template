@@ -80,19 +80,16 @@ def _stats_joueurs(joueurs: list[Joueur], sport: Sport) -> None:
     print(f"\n=== Statistiques des joueurs — {sport.nom} ===\n")
     print(f"  Nombre total de joueurs : {len(joueurs)}")
 
-    # Taille moyenne
     tailles = [j.taille for j in joueurs if j.taille is not None]
     if tailles:
         print(f"  Taille moyenne          : {sum(tailles) / len(tailles):.1f} cm")
         print(f"  Joueur le plus grand    : {_joueur_max(joueurs, 'taille')}")
         print(f"  Joueur le plus petit    : {_joueur_min(joueurs, 'taille')}")
 
-    # Poids moyen (basketball)
     poids = [j.poids for j in joueurs if j.poids is not None]
     if poids:
         print(f"  Poids moyen             : {sum(poids) / len(poids):.1f} kg")
 
-    # Répartition par position (basketball / LoL)
     positions = [j.position for j in joueurs if j.position]
     if positions:
         compteur: dict[str, int] = {}
@@ -102,7 +99,6 @@ def _stats_joueurs(joueurs: list[Joueur], sport: Sport) -> None:
         for pos, nb in sorted(compteur.items(), key=lambda x: -x[1]):
             print(f"    {pos:<15} : {nb} joueurs")
 
-    # Répartition par pays
     pays_list = [j.pays for j in joueurs if j.pays]
     if pays_list:
         compteur_pays: dict[str, int] = {}

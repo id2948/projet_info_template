@@ -18,11 +18,11 @@ from src.menu.match_menu import run_match_menu
 from src.menu.joueur_menu import run_joueur_menu
 
 SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
-CATEGORIES_DISPONIBLES = ["match", "joueur"]  # à étendre : club, coach...
+CATEGORIES_DISPONIBLES = ["match", "joueur"]
 
 print("=== Bienvenue dans la base de données sportive ===\n")
 
-# Choix du sport
+# choix du sport
 print(f"Sports disponibles : {', '.join(SPORTS_DISPONIBLES)}")
 sport_choisi = input("Quel sport ? ").strip()
 
@@ -30,7 +30,7 @@ if sport_choisi not in SPORTS_DISPONIBLES:
     print(f"Sport '{sport_choisi}' non reconnu.")
     exit()
 
-# Choix de la catégorie
+# choix de la catégorie
 print(f"\nCatégories disponibles : {', '.join(CATEGORIES_DISPONIBLES)}")
 categorie = input("Quelle catégorie ? ").strip().lower()
 
