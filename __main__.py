@@ -1,8 +1,8 @@
 from src.sport import Sport
-from src.loader.MatchLoader import MatchLoader
-from src.loader.JoueurLoader import JoueurLoader
 from src.Model.Match import Match
 from src.Model.Joueur import Joueur
+from src.Model.Equipe import Equipe
+from src.Model.Competition import Competition
 
 import src.loader.BasketballMatchLoader
 import src.loader.FootballMatchLoader
@@ -17,7 +17,7 @@ import src.loader.TennisJoueurLoader
 import src.loader.VolleyJoueurLoader
 
 SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
-CATEGORIES_DISPONIBLES = ["match", "joueur"]
+CATEGORIES_DISPONIBLES = ["match", "joueur", "equipe", "competition"]
 
 print("=== Bienvenue dans la base de données sportive ===\n")
 
@@ -37,5 +37,9 @@ if categorie == "match":
     Match.run_menu(Sport(sport_choisi))
 elif categorie == "joueur":
     Joueur.run_menu(Sport(sport_choisi))
+elif categorie == "equipe":
+    Equipe.run_menu(Sport(sport_choisi))
+elif categorie == "competition":
+    Competition.run_menu(Sport(sport_choisi))
 else:
     print(f"Catégorie '{categorie}' non reconnue.")
