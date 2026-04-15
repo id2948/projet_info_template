@@ -1,7 +1,6 @@
 from datetime import date
 from typing import Optional
 
-# ⚠️ import de ta classe Equipe (à adapter selon ton projet)
 from equipe import Equipe
 
 
@@ -38,7 +37,6 @@ class Personne:
         taille: float | None = None,
         equipe: Optional[Equipe] = None
     ) -> None:
-        # --- Vérifications ---
         if id is not None and not isinstance(id, str):
             raise TypeError("'id' doit être une instance de str")
 
@@ -57,13 +55,12 @@ class Personne:
         if equipe is not None and not isinstance(equipe, Equipe):
             raise TypeError("'equipe' doit être une instance de Equipe")
 
-        # --- Attributs ---
         self.id = id
         self.nom = nom
         self.prénom = prénom
         self.date_naissance = date_naissance
         self.taille = float(taille) if taille is not None else None
-        self.equipe = equipe  # 👈 ajout ici
+        self.equipe = equipe
 
     def __repr__(self) -> str:
         return (

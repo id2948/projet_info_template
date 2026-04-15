@@ -15,10 +15,8 @@ class VolleyMatchLoader:
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
 
-        # Dictionnaire code -> nom du pays
         countries = dict(zip(df_countries["code"], df_countries["country"]))
 
-        # Harmoniser les noms de colonnes (hommes: country_code_X, femmes: country_X)
         df_men = df_men.rename(columns={"country_code_1": "code_1", "country_code_2": "code_2"})
         df_women = df_women.rename(columns={"country_1":      "code_1", "country_2":      "code_2"})
 

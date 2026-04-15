@@ -3,9 +3,6 @@ from typing import Optional
 from team import Equipe
 from personne import Personne
 
-# On réutilise ta classe Personne
-
-
 class Joueur(Personne):
     """Représente un joueur dans une équipe."""
 
@@ -18,7 +15,6 @@ class Joueur(Personne):
         taille: float | None = None,
         equipe: Optional[Equipe] = None
     ) -> None:
-        # Appel au constructeur de Personne
         super().__init__(id, nom, prénom, date_naissance, taille, equipe)
 
     def __repr__(self) -> str:
@@ -37,7 +33,6 @@ class Coach(Personne):
         taille: float | None = None,
         equipe: Optional[Equipe] = None
     ) -> None:
-        # Appel au constructeur de Personne
         super().__init__(id, nom, prénom, date_naissance, taille, equipe)
 
     def __repr__(self) -> str:
