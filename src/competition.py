@@ -1,12 +1,15 @@
-from src.sport import Sport 
-
-
-
 class Competition:
-    def __init__(self, nom: str, sport : Sport) -> None:
+    """Représente une compétition sportive.
+
+    Parameters
+    ----------
+    nom : str
+        nom de la compétition
+    """
+
+    def __init__(self, nom: str) -> None:
         if not isinstance(nom, str):
             raise TypeError("'nom' doit être une instance de str")
-
 
         self.nom = nom
 

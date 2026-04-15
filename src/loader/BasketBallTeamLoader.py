@@ -14,7 +14,7 @@ class BasketballTeamLoader:
         equipes = {}
         for row in data:
             equipe = self._create_equipe(row)
-            equipes[equipe.id] = equipe  # clé = team_id
+            equipes[equipe.id] = equipe 
 
         return equipes
 

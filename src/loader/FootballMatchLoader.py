@@ -13,7 +13,6 @@ class FootballMatchLoader:
         df_matches = pd.read_csv(self.DATA_MATCHES)
         df_teams = pd.read_csv(self.DATA_TEAMS)
 
-        # Dictionnaire team_api_id -> nom complet
         teams = dict(zip(df_teams["team_api_id"].astype(str), df_teams["team_long_name"]))
 
         df = pd.DataFrame({

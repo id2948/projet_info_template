@@ -9,7 +9,6 @@ class BasketballMatchLoader:
         df_games = pd.read_csv(self.DATA_GAMES)
         df_teams = pd.read_csv(self.DATA_TEAMS)
 
-        # Dictionnaire id -> nom complet de l'équipe
         teams = dict(zip(df_teams["id"].astype(str), df_teams["full_name"]))
 
         df = pd.DataFrame({

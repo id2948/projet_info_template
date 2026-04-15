@@ -1,6 +1,8 @@
 from src.sport import Sport
 from src.loader.MatchLoader import MatchLoader
 from src.loader.JoueurLoader import JoueurLoader
+from src.Model.Match import Match
+from src.Model.Joueur import Joueur
 
 import src.loader.BasketballMatchLoader
 import src.loader.FootballMatchLoader
@@ -14,14 +16,10 @@ import src.loader.LoLJoueurLoader
 import src.loader.TennisJoueurLoader
 import src.loader.VolleyJoueurLoader
 
-from src.menu.match_menu import run_match_menu
-from src.menu.joueur_menu import run_joueur_menu
-
 SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
-CATEGORIES_DISPONIBLES = ["match", "joueur"]  
-CATEGORIES_DISPONIBLES_AVEC_COMPET = ["match", "joueur", "compétition"]  
+CATEGORIES_DISPONIBLES = ["match", "joueur"]
 
-print("=== Projet Traitement de données ===\n")
+print("=== Bienvenue dans la base de données sportive ===\n")
 
 # Choix du sport
 print(f"Sports disponibles : {', '.join(SPORTS_DISPONIBLES)}")
@@ -32,24 +30,12 @@ if sport_choisi not in SPORTS_DISPONIBLES:
     exit()
 
 # Choix de la catégorie
-if sport_choisi in ["basketball", "football", "tennis"]:
-    print(f"\nCatégories disponibles : {', '.join(CATEGORIES_DISPONIBLES_AVEC_COMPET)}")
-    categorie = input("Quelle catégorie ? ").strip().lower()
-    if categorie == "match":
-        run_match_menu(Sport(sport_choisi))
-    elif categorie == "joueur":
-        run_joueur_menu(Sport(sport_choisi))
-    elif categorie == "compétition":
-        pass
-    else:
-        print("catégorie inconnue")
+print(f"\nCatégories disponibles : {', '.join(CATEGORIES_DISPONIBLES)}")
+categorie = input("Quelle catégorie ? ").strip().lower()
 
-if sport_choisi in ["LOL", "volley"]:
-    print(f"\nCatégories disponibles : {', '.join(CATEGORIES_DISPONIBLES)}")
-    categorie = input("Quelle catégorie ? ").strip().lower()
-    if categorie == "match":
-        run_match_menu(Sport(sport_choisi))
-    elif categorie == "joueur":
-        run_joueur_menu(Sport(sport_choisi))
-    else:
-        print("catégorie inconnue")
+if categorie == "match":
+    Match.run_menu(Sport(sport_choisi))
+elif categorie == "joueur":
+    Joueur.run_menu(Sport(sport_choisi))
+else:
+    print(f"Catégorie '{categorie}' non reconnue.")

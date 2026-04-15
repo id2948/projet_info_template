@@ -17,7 +17,6 @@ class TennisJoueurLoader:
         joueurs = []
         for _, row in df.iterrows():
             dob = str(row["dob"]) if pd.notna(row["dob"]) else None
-            # Format dob: 19970420.0 -> 1997-04-20
             if dob and dob != "nan":
                 dob = dob.split(".")[0]
                 if len(dob) == 8:

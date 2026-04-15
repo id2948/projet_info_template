@@ -1,6 +1,5 @@
 from competition import Competition
-from Parsers.parse_csv import parse_csv 
-
+from Parsers.parse_csv import parse_csv  
 
 class CompetitionLoader:
     """Charge les compétitions depuis season_type."""

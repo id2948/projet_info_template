@@ -17,7 +17,6 @@ class TennisMatchLoader:
         df_atp_p = pd.read_csv(self.DATA_ATP_PLAYERS)
         df_wta_p = pd.read_csv(self.DATA_WTA_PLAYERS)
 
-        # Dictionnaire player_id -> nom complet
         def build_players(df_p: pd.DataFrame) -> dict:
             return dict(
                 zip(
