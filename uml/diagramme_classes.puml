@@ -1,0 +1,164 @@
+@startuml Diagramme de classes
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam packageFontSize 12
+skinparam linetype ortho
+hide empty members
+
+' ─────────────────────────────────────────────────────
+' Modèle
+' ─────────────────────────────────────────────────────
+
+package "Modèle" {
+
+    class Sport {
+        + nom : str
+        + __str__() : str
+    }
+
+    class Match {
+        + date : str
+        + equipe_1 : str
+        + equipe_2 : str
+        + score_1 : float
+        + score_2 : float
+        + sport : str
+        + season : str
+        + winner : str
+        + patch : str
+        + surface : str
+        + round : str
+        --
+        + {static} run_menu(sport : Sport)
+    }
+
+    class Joueur {
+        + nom : str
+        + sport : str
+        + prenom : str
+        + pseudo : str
+        + equipe : str
+        + position : str
+        + date_naissance : str
+        + taille : float
+        + poids : float
+        + pays : str
+        + main : str
+        --
+        + {static} run_menu(sport : Sport)
+    }
+
+    class Equipe {
+        + nom : str
+        + sport : str
+        + abreviation : str
+        + matchs_joues : int
+        + victoires : int
+        + defaites : int
+        + nuls : int
+        + points : int
+        + score_pour : float
+        + score_contre : float
+        + rebonds : float
+        + passes : float
+        + kills : int
+        + dragons : int
+        --
+        + difference_score : float
+        + winrate : float
+        --
+        + ajouter_match(score_pour, score_contre, nul_possible)
+        + {static} run_menu(sport : Sport)
+    }
+
+    class Competition {
+        + nom : str
+        + sport : str
+        + equipes : dict
+        --
+        + ajouter_equipe(cle, equipe)
+        + classement_par(*criteres) : list
+        + {static} run_menu(sport : Sport)
+    }
+
+}
+
+' ─────────────────────────────────────────────────────
+' Chargeurs (pattern Dispatcher + Registre)
+' ─────────────────────────────────────────────────────
+
+package "Chargeurs" {
+
+    class MatchLoader {
+        - _loaders : dict
+        --
+        + {static} register(sport_nom, loader)
+        + load_all_matches(sport : Sport) : list
+    }
+
+    class JoueurLoader {
+        - _loaders : dict
+        --
+        + {static} register(sport_nom, loader)
+        + load_all_joueurs(sport : Sport) : list
+        + afficher_stats(joueurs, sport)
+    }
+
+    class EquipeLoader {
+        - _loaders : dict
+        --
+        + {static} register(sport_nom, loader)
+        + run(sport : Sport)
+    }
+
+    class CompetitionLoader {
+        - _loaders : dict
+        --
+        + {static} register(sport_nom, loader)
+        + run(sport : Sport)
+    }
+
+    class ResultatManager {
+        --
+        + {static} sauvegarder(sport, date, eq1, eq2, s1, s2)
+        + {static} charger(sport) : list
+        + {static} appliquer_a_equipe(equipe, nom, nul_possible) : int
+        + {static} appliquer_a_competition(comp, nul_possible) : int
+        + {static} lister(sport) : list
+    }
+
+    note right of MatchLoader
+      Chaque loader contient
+      5 loaders internes :
+      Basketball, Football,
+      LoL, Tennis, Volley
+    end note
+
+}
+
+' ─────────────────────────────────────────────────────
+' Relations
+' ─────────────────────────────────────────────────────
+
+Competition "1" *-- "0..*" Equipe : contient >
+
+Match ..> Sport : utilise
+Joueur ..> Sport : utilise
+Equipe ..> Sport : utilise
+Competition ..> Sport : utilise
+
+MatchLoader ..> Match : crée
+MatchLoader ..> ResultatManager : enrichit avec
+JoueurLoader ..> Joueur : crée
+EquipeLoader ..> Equipe : met à jour
+EquipeLoader ..> ResultatManager : enrichit avec
+CompetitionLoader ..> Competition : construit
+CompetitionLoader ..> ResultatManager : enrichit avec
+
+Match ..> MatchLoader : délègue à
+Joueur ..> JoueurLoader : délègue à
+Equipe ..> EquipeLoader : délègue à
+Competition ..> CompetitionLoader : délègue à
+
+@enduml
