@@ -78,7 +78,7 @@ package "Modèle" {
         + equipes : dict
         --
         + ajouter_equipe(cle, equipe)
-        + classement_par(*criteres) : list
+        + classement_par(critere : str) : list
         + {static} run_menu(sport : Sport)
     }
 
@@ -119,7 +119,7 @@ package "Chargeurs" {
         + run(sport : Sport)
     }
 
-    class ResultatManager {
+    class GestionResultats {
         --
         + {static} sauvegarder(sport, date, eq1, eq2, s1, s2)
         + {static} charger(sport) : list
@@ -149,12 +149,12 @@ Equipe ..> Sport : utilise
 Competition ..> Sport : utilise
 
 MatchLoader ..> Match : crée
-MatchLoader ..> ResultatManager : enrichit avec
+MatchLoader ..> GestionResultats : enrichit avec
 JoueurLoader ..> Joueur : crée
 EquipeLoader ..> Equipe : met à jour
-EquipeLoader ..> ResultatManager : enrichit avec
+EquipeLoader ..> GestionResultats : enrichit avec
 CompetitionLoader ..> Competition : construit
-CompetitionLoader ..> ResultatManager : enrichit avec
+CompetitionLoader ..> GestionResultats : enrichit avec
 
 Match ..> MatchLoader : délègue à
 Joueur ..> JoueurLoader : délègue à

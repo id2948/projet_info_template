@@ -7,7 +7,7 @@ class MatchLoader:
     """Dispatcher qui charge les matchs selon le sport sélectionné.
 
     Les loaders spécifiques s'enregistrent via `register`.
-    Les nouveaux résultats (ResultatManager) sont automatiquement ajoutés.
+    Les nouveaux résultats (GestionResultats) sont automatiquement ajoutés.
     """
 
     _loaders = {}

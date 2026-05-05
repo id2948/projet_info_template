@@ -160,6 +160,14 @@ def test_appliquer_a_competition_equipe_existante(fichier_temp):
     assert comp.equipes["PSG"].victoires == 1
 
 
+def test_appliquer_a_competition_equipe2_existante(fichier_temp):
+    GestionResultats.sauvegarder("football", "2025-01-01", "PSG", "Lyon", 2, 1)
+    comp = Competition("Test", "football")
+    comp.ajouter_equipe("Lyon", Equipe("Lyon", "football"))
+    GestionResultats.appliquer_a_competition(comp)
+    assert comp.equipes["Lyon"].defaites == 1
+
+
 # ──────────────────────────────────────────────────────
 # lister
 # ──────────────────────────────────────────────────────

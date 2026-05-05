@@ -64,3 +64,10 @@ def test_classement_par_victoires():
 def test_classement_liste_vide():
     c = Competition("Vide", "football")
     assert c.classement_par("points") == []
+
+
+def test_repr_contient_nom_et_sport():
+    c = Competition("Ligue 1", "football")
+    r = repr(c)
+    assert "Ligue 1" in r
+    assert "football" in r

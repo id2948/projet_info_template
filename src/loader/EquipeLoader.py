@@ -159,7 +159,9 @@ class LoLEquipeLoader:
     def run(self) -> None:
         df      = pd.read_csv(self.DATA_MATCHES)
         df_team = pd.read_csv(self.DATA_TEAMS)
-        teams_info = dict(zip(df_team["team_abbreviation"], df_team["team"]))
+        teams_info = {}
+        for _, row in df_team.iterrows():
+            teams_info[row["team_abbreviation"]] = row["team"]
 
         nom = input("  Nom ou abréviation de l'équipe : ").strip()
         equipes_trouvees = {abrev: tname for abrev, tname in teams_info.items()

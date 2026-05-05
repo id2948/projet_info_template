@@ -58,3 +58,12 @@ def test_str_affiche_pays_si_present():
     j = Joueur("Zverev", "tennis", prenom="Alexander", pays="GER")
     s = str(j)
     assert "GER" in s
+
+
+def test_str_affiche_position_taille_date():
+    j = Joueur("James", "basketball", prenom="LeBron",
+               position="Forward", taille=206.0, date_naissance="1984-12-30")
+    s = str(j)
+    assert "Forward" in s
+    assert "206.0" in s
+    assert "1984-12-30" in s

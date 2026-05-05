@@ -68,7 +68,7 @@ classDiagram
         +sport : str
         +equipes : dict
         +ajouter_equipe(cle, equipe)
-        +classement_par(*criteres) list
+        +classement_par(critere : str) list
         +run_menu(sport : Sport)$
     }
 
@@ -99,7 +99,7 @@ classDiagram
         +run(sport : Sport)
     }
 
-    class ResultatManager {
+    class GestionResultats {
         +sauvegarder(sport, date, eq1, eq2, s1, s2)$
         +charger(sport) list$
         +appliquer_a_equipe(equipe, nom) int$
@@ -123,9 +123,9 @@ classDiagram
     Equipe ..> EquipeLoader : délègue run_menu à
     Competition ..> CompetitionLoader : délègue run_menu à
 
-    MatchLoader ..> ResultatManager : enrichit avec
-    EquipeLoader ..> ResultatManager : enrichit avec
-    CompetitionLoader ..> ResultatManager : enrichit avec
+    MatchLoader ..> GestionResultats : enrichit avec
+    EquipeLoader ..> GestionResultats : enrichit avec
+    CompetitionLoader ..> GestionResultats : enrichit avec
 
     MatchLoader ..> Match : crée
     JoueurLoader ..> Joueur : crée
@@ -151,7 +151,7 @@ MatchLoader().load_all_matches(sport)   ← dispatch automatique
 Ajouter un nouveau sport revient à créer une classe dans le fichier loader concerné
 et à appeler `register` — sans modifier aucune autre classe.
 
-### ResultatManager
+### GestionResultats
 
 Classe utilitaire à méthodes statiques qui persiste les nouveaux résultats dans
 `data/resultats/nouveaux_matchs.csv`. Les loaders l'appellent automatiquement
