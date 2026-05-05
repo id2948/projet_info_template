@@ -19,7 +19,7 @@ def print_timings(func):
         start_time = time.process_time()
         result = func(*args, **kwargs)
         end_time = time.process_time()
-        print(f'Function {func.__name__!r} executed in {(end_time-start_time):.4f}s')
+        print(f'Fonction {func.__name__!r} exécutée en {(end_time-start_time):.4f}s')
         return result
     return wrap_func
 

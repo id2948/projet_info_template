@@ -1,14 +1,18 @@
-# Projet Info 1A 2025 — Gestion de compétitions sportives
+# Projet Informatique 1A — Gestion de compétitions sportives
 
-## Objectif
+## Présentation
 
-Application Python en ligne de commande permettant de gérer des compétitions sportives : consulter les résultats et statistiques des matchs, joueurs, équipes et classements ; enregistrer de nouveaux résultats qui mettent à jour automatiquement les statistiques.
+Ce projet propose une application en ligne de commande pour gérer des compétitions sportives. Elle permet de consulter les résultats et les statistiques des matchs, des joueurs, des équipes et des classements, ainsi qu'enregistrer de nouveaux résultats qui mettent à jour automatiquement les statistiques.
 
-Sports supportés : basketball, football, League of Legends, tennis, volleyball.
+Les sports pris en charge sont : basketball, football, League of Legends, tennis et volleyball.
 
-## Version Python
+## Auteurs
 
-Python **3.11** ou supérieur.
+Voir le fichier `AUTHORS.md`.
+
+## Prérequis
+
+Python 3.11 ou supérieur.
 
 ## Installation
 
@@ -16,8 +20,8 @@ Créer et activer un environnement virtuel :
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Linux / macOS
-.venv\Scripts\activate           # Windows
+source .venv/bin/activate    # Linux / macOS
+.venv\Scripts\activate       # Windows
 ```
 
 Installer les dépendances :
@@ -26,92 +30,82 @@ Installer les dépendances :
 pip install -r requirements.txt
 ```
 
-## Lancer l'application
+## Utilisation
 
 ```bash
 python main.py
 ```
 
-L'application propose un menu interactif. Choisissez un sport puis une catégorie :
+L'application présente un menu interactif. L'utilisateur choisit d'abord un sport, puis une catégorie parmi les suivantes :
 
-| Catégorie   | Description |
-|-------------|-------------|
-| `match`     | Recherche et statistiques de matchs |
-| `joueur`    | Recherche et statistiques des joueurs |
-| `equipe`    | Statistiques d'une équipe |
-| `competition` | Classements de la compétition |
-| `ajouter`   | Enregistrer le résultat d'un nouveau match |
-| `historique` | Consulter les résultats enregistrés |
+- `match` : recherche et statistiques de matchs
+- `joueur` : recherche et statistiques des joueurs
+- `equipe` : statistiques d'une équipe
+- `competition` : classements de la compétition
+- `ajouter` : enregistrer le résultat d'un nouveau match
+- `historique` : consulter les résultats enregistrés manuellement
 
-Les résultats ajoutés via `ajouter` sont sauvegardés dans `data/resultats/nouveaux_matchs.csv` et pris en compte automatiquement dans toutes les statistiques et classements.
+Les résultats ajoutés sont sauvegardés dans `data/resultats/nouveaux_matchs.csv` et sont automatiquement intégrés aux statistiques et aux classements lors de la prochaine consultation.
 
 ## Structure du projet
 
 ```
 projet_info_template/
-├── main.py                        ← point d'entrée
-├── requirements.txt               ← dépendances avec versions exactes
-├── pyproject.toml                 ← config linter, formatter et tests
+├── main.py
+├── requirements.txt
+├── pyproject.toml
 ├── data/
-│   ├── basketball/ football/ LOL/ tennis/ volley/   ← données CSV
-│   └── resultats/nouveaux_matchs.csv                ← résultats ajoutés
+│   ├── basketball/
+│   ├── football/
+│   ├── LOL/
+│   ├── tennis/
+│   ├── volley/
+│   └── resultats/
 ├── src/
 │   ├── sport.py
-│   ├── Model/       ← Match, Joueur, Equipe, Competition
-│   ├── loader/      ← chargement CSV et gestion des résultats
-│   └── Common/      ← utilitaires
-└── test/            ← tests pytest
+│   ├── Model/
+│   ├── loader/
+│   └── Common/
+└── test/
 ```
 
 ## Tests
 
-Lancer les tests :
+Exécuter les tests :
 
 ```bash
 pytest
 ```
 
-Lancer les tests avec la couverture :
+Mesurer la couverture du code :
 
 ```bash
 pytest --cov=src --cov-report=term-missing
 ```
 
-## Linter
+## Qualité du code
 
-Linter utilisé : **Flake8**
+Linter utilisé : Flake8
 
 ```bash
 flake8 src/
 ```
 
-## Formatter
-
-Formatter utilisé : **Black**
+Formatter utilisé : Black
 
 ```bash
 black src/
 ```
 
-## Style de documentation
+## Documentation
 
-Les docstrings suivent le style **NumPy**.
+Les docstrings suivent le style NumPy.
 
 ## Dépendances
 
-| Paquet | Version | Usage |
-|--------|---------|-------|
-| pandas | 2.3.3 | Chargement des CSV |
-| pytest | 9.0.3 | Tests unitaires |
-| pytest-cov | 7.1.0 | Couverture des tests |
-| black | 25.1.0 | Formatage du code |
-
-## Sports supportés
-
-| Sport | Matchs | Joueurs | Équipes | Compétition | Ajout résultats |
-|-------|--------|---------|---------|-------------|-----------------|
-| Basketball | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Football | ✅ | ✅ | ✅ | ✅ | ✅ |
-| LoL | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Tennis | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Volleyball | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Paquet     | Version |
+|------------|---------|
+| pandas     | 2.3.3   |
+| pytest     | 9.0.3   |
+| pytest-cov | 7.1.0   |
+| black      | 25.1.0  |

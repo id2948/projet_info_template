@@ -55,12 +55,12 @@ class Competition:
     def run_menu(sport: Sport) -> None:
         """Affiche le menu de classement pour un sport donné.
 
-        Délègue au loader enregistré pour ce sport via CompetitionMenuLoader.
+        Délègue au loader enregistré pour ce sport via CompetitionLoader.
 
         Parameters
         ----------
         sport : Sport
             Sport sélectionné par l'utilisateur.
         """
-        from src.loader.CompetitionMenuLoader import CompetitionMenuLoader
-        CompetitionMenuLoader().run(sport)
+        from src.loader.CompetitionLoader import CompetitionLoader
+        CompetitionLoader().run(sport)

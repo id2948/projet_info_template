@@ -137,8 +137,8 @@ class Joueur:
                 else:
                     print("  Option non disponible pour ce sport.")
             elif choix == "4":
-                from src.loader.JoueurStatsLoader import JoueurStatsLoader
-                JoueurStatsLoader().run(joueurs, sport)
+                from src.loader.JoueurLoader import JoueurLoader
+                JoueurLoader().afficher_stats(joueurs, sport)
             else:
                 print("  Choix invalide.")
 

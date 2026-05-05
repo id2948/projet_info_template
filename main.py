@@ -4,35 +4,10 @@ from src.Model.Joueur import Joueur
 from src.Model.Equipe import Equipe
 from src.Model.Competition import Competition
 
-import src.loader.BasketballMatchLoader
-import src.loader.FootballMatchLoader
-import src.loader.LoLMatchLoader
-import src.loader.TennisMatchLoader
-import src.loader.VolleyMatchLoader
-
-import src.loader.BasketballJoueurLoader
-import src.loader.FootballJoueurLoader
-import src.loader.LoLJoueurLoader
-import src.loader.TennisJoueurLoader
-import src.loader.VolleyJoueurLoader
-
-import src.loader.BasketballEquipeLoader
-import src.loader.FootballEquipeLoader
-import src.loader.LoLEquipeLoader
-import src.loader.TennisEquipeLoader
-import src.loader.VolleyEquipeLoader
-
-import src.loader.BasketballCompetitionLoader
-import src.loader.FootballCompetitionLoader
-import src.loader.LoLCompetitionLoader
-import src.loader.TennisCompetitionLoader
-import src.loader.VolleyCompetitionLoader
-
-import src.loader.BasketballJoueurStats
-import src.loader.FootballJoueurStats
-import src.loader.LoLJoueurStats
-import src.loader.TennisJoueurStats
-import src.loader.VolleyJoueurStats
+import src.loader.MatchLoader       # enregistre les 5 loaders de matchs
+import src.loader.JoueurLoader      # enregistre les 5 loaders de joueurs + stats
+import src.loader.EquipeLoader      # enregistre les 5 loaders d'équipe
+import src.loader.CompetitionLoader # enregistre les 5 loaders de compétition
 
 SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
 
@@ -45,7 +20,6 @@ CATEGORIES = {
     "historique":  "Consulter les résultats enregistrés",
 }
 
-_SEP  = "─" * 56
 _SEP2 = "═" * 56
 
 
@@ -58,32 +32,28 @@ def _entete() -> None:
 
 def _menu_sport() -> None:
     """Affiche la liste des sports disponibles."""
-    print(f"\n  Sports disponibles :")
-    print(f"    {' | '.join(SPORTS_DISPONIBLES)}")
+    print(f"\n  Sports : {' | '.join(SPORTS_DISPONIBLES)}")
     print("  (q pour quitter)\n")
 
 
 def _menu_categorie(sport: str) -> None:
-    """Affiche le menu des catégories pour le sport sélectionné.
+    """Affiche le menu des catégories pour le sport choisi.
 
     Parameters
     ----------
     sport : str
         Nom du sport sélectionné.
     """
-    print(f"\n  {_SEP}")
-    print(f"  Sport : {sport.upper()}")
-    print(f"  {_SEP}")
+    print(f"\n  ── {sport.upper()} " + "─" * (50 - len(sport)))
     for cat, desc in CATEGORIES.items():
         print(f"    {cat:<12}  {desc}")
     print("\n  (retour = changer de sport | q = quitter)\n")
 
 
 def _ajouter_resultat(sport: str) -> None:
-    """Invite l'utilisateur à saisir un résultat et le sauvegarde.
+    """Saisie guidée d'un nouveau résultat et sauvegarde dans le fichier CSV.
 
-    Le résultat est persisté dans data/resultats/nouveaux_matchs.csv
-    et sera automatiquement pris en compte dans les stats et classements.
+    Le résultat est automatiquement pris en compte dans toutes les statistiques.
 
     Parameters
     ----------
@@ -91,11 +61,7 @@ def _ajouter_resultat(sport: str) -> None:
         Nom du sport pour lequel enregistrer le résultat.
     """
     from src.loader.ResultatManager import ResultatManager
-
-    print(f"\n  {_SEP}")
-    print(f"  Enregistrer un résultat — {sport.upper()}")
-    print(f"  {_SEP}\n")
-
+    print(f"\n  ── Enregistrer un résultat — {sport.upper()} ──\n")
     try:
         date     = input("  Date       (AAAA-MM-JJ) : ").strip()
         equipe_1 = input("  Équipe 1               : ").strip()
@@ -105,24 +71,20 @@ def _ajouter_resultat(sport: str) -> None:
     except ValueError:
         print("\n  Saisie invalide — résultat non enregistré.")
         return
-
     if not date or not equipe_1 or not equipe_2:
         print("\n  Tous les champs sont requis.")
         return
 
     ResultatManager.sauvegarder(sport, date, equipe_1, equipe_2, score_1, score_2)
-
     if score_1 > score_2:
         vainqueur = equipe_1
     elif score_2 > score_1:
         vainqueur = equipe_2
     else:
         vainqueur = "Match nul"
-
-    print(f"\n  ✓ Résultat enregistré :")
-    print(f"    {equipe_1} {score_1:.0f} — {score_2:.0f} {equipe_2}  ({date})")
+    print(f"\n  ✓ {equipe_1} {score_1:.0f} — {score_2:.0f} {equipe_2}  ({date})")
     print(f"    Vainqueur : {vainqueur}")
-    print("  Les stats et classements seront mis à jour automatiquement.")
+    print("  Les stats et classements sont mis à jour automatiquement.")
 
 
 def _afficher_historique(sport: str) -> None:
@@ -135,22 +97,12 @@ def _afficher_historique(sport: str) -> None:
     """
     from src.loader.ResultatManager import ResultatManager
     resultats = ResultatManager.lister(sport)
-
-    print(f"\n  {_SEP}")
-    print(f"  Résultats enregistrés — {sport.upper()} ({len(resultats)})")
-    print(f"  {_SEP}\n")
-
+    print(f"\n  ── Résultats enregistrés — {sport.upper()} ({len(resultats)}) ──\n")
     if not resultats:
         print("  Aucun résultat enregistré pour ce sport.")
         return
-
     for m in resultats:
-        if m.score_1 > m.score_2:
-            flag = "▶"
-        elif m.score_2 > m.score_1:
-            flag = "◀"
-        else:
-            flag = "="
+        flag = "▶" if m.score_1 > m.score_2 else ("◀" if m.score_2 > m.score_1 else "=")
         print(f"  {m.date}  {m.equipe_1:<25} {m.score_1:.0f} {flag} {m.score_2:.0f}  {m.equipe_2}")
 
 
@@ -179,10 +131,8 @@ def main() -> None:
             if categorie in ("q", "quitter", "exit"):
                 print("\n  Au revoir !\n")
                 return
-
             if categorie in ("retour", "r", "back"):
                 break
-
             if categorie not in CATEGORIES:
                 print(f"\n  Catégorie « {categorie} » non reconnue.\n")
                 continue

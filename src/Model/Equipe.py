@@ -90,12 +90,12 @@ class Equipe:
     def run_menu(sport: Sport) -> None:
         """Affiche le menu de statistiques d'équipe pour un sport donné.
 
-        Délègue au loader enregistré pour ce sport via EquipeMenuLoader.
+        Délègue au loader enregistré pour ce sport via EquipeLoader.
 
         Parameters
         ----------
         sport : Sport
             Sport sélectionné par l'utilisateur.
         """
-        from src.loader.EquipeMenuLoader import EquipeMenuLoader
-        EquipeMenuLoader().run(sport)
+        from src.loader.EquipeLoader import EquipeLoader
+        EquipeLoader().run(sport)
