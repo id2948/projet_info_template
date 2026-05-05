@@ -4,10 +4,10 @@ from src.Model.Joueur import Joueur
 from src.Model.Equipe import Equipe
 from src.Model.Competition import Competition
 
-import src.loader.MatchLoader
-import src.loader.JoueurLoader
-import src.loader.EquipeLoader
-import src.loader.CompetitionLoader
+import src.loader.MatchLoader       # noqa: F401
+import src.loader.JoueurLoader      # noqa: F401
+import src.loader.EquipeLoader      # noqa: F401
+import src.loader.CompetitionLoader  # noqa: F401
 
 SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
 
@@ -63,11 +63,11 @@ def _ajouter_resultat(sport: str) -> None:
     from src.loader.GestionResultats import GestionResultats
     print(f"\n  ── Enregistrer un résultat — {sport.upper()} ──\n")
     try:
-        date     = input("  Date       (AAAA-MM-JJ) : ").strip()
+        date = input("  Date       (AAAA-MM-JJ) : ").strip()
         equipe_1 = input("  Équipe 1               : ").strip()
         equipe_2 = input("  Équipe 2               : ").strip()
-        score_1  = float(input(f"  Score  {equipe_1[:18]:<18}: ").strip())
-        score_2  = float(input(f"  Score  {equipe_2[:18]:<18}: ").strip())
+        score_1 = float(input(f"  Score  {equipe_1[:18]:<18}: ").strip())
+        score_2 = float(input(f"  Score  {equipe_2[:18]:<18}: ").strip())
     except ValueError:
         print("\n  Saisie invalide — résultat non enregistré.")
         return
@@ -111,6 +111,64 @@ def _afficher_historique(sport: str) -> None:
         print(f"  {m.date}  {m.equipe_1:<25} {m.score_1:.0f} {flag} {m.score_2:.0f}  {m.equipe_2}")
 
 
+def _executer_categorie(categorie: str, sport: Sport, sport_saisi: str) -> None:
+    """Lance l'action correspondant à la catégorie choisie.
+
+    Parameters
+    ----------
+    categorie : str
+        Catégorie saisie par l'utilisateur.
+    sport : Sport
+        Sport sélectionné.
+    sport_saisi : str
+        Nom brut du sport (pour GestionResultats).
+    """
+    if categorie == "match":
+        Match.run_menu(sport)
+    elif categorie == "joueur":
+        Joueur.run_menu(sport)
+    elif categorie == "equipe":
+        Equipe.run_menu(sport)
+    elif categorie == "competition":
+        Competition.run_menu(sport)
+    elif categorie == "ajouter":
+        _ajouter_resultat(sport_saisi)
+    elif categorie == "historique":
+        _afficher_historique(sport_saisi)
+
+
+def _boucle_categorie(sport: Sport, sport_saisi: str) -> bool:
+    """Boucle sur le menu des catégories pour un sport donné.
+
+    Parameters
+    ----------
+    sport : Sport
+        Sport sélectionné.
+    sport_saisi : str
+        Nom brut du sport.
+
+    Returns
+    -------
+    bool
+        True si l'utilisateur veut quitter l'application, False pour revenir.
+    """
+    while True:
+        _menu_categorie(sport_saisi)
+        categorie = input("  Quelle catégorie ? ").strip().lower()
+
+        if categorie in ("q", "quitter"):
+            print("\n  Au revoir !\n")
+            return True
+        if categorie in ("retour", "r"):
+            return False
+        if categorie not in CATEGORIES:
+            print(f"\n  Catégorie « {categorie} » non reconnue.\n")
+            continue
+
+        print()
+        _executer_categorie(categorie, sport, sport_saisi)
+
+
 def main() -> None:
     """Point d'entrée de l'application — boucle interactive principale."""
     _entete()
@@ -128,33 +186,8 @@ def main() -> None:
             continue
 
         sport = Sport(sport_saisi)
-
-        while True:
-            _menu_categorie(sport_saisi)
-            categorie = input("  Quelle catégorie ? ").strip().lower()
-
-            if categorie in ("q", "quitter"):
-                print("\n  Au revoir !\n")
-                return
-            if categorie in ("retour", "r"):
-                break
-            if categorie not in CATEGORIES:
-                print(f"\n  Catégorie « {categorie} » non reconnue.\n")
-                continue
-
-            print()
-            if categorie == "match":
-                Match.run_menu(sport)
-            elif categorie == "joueur":
-                Joueur.run_menu(sport)
-            elif categorie == "equipe":
-                Equipe.run_menu(sport)
-            elif categorie == "competition":
-                Competition.run_menu(sport)
-            elif categorie == "ajouter":
-                _ajouter_resultat(sport_saisi)
-            elif categorie == "historique":
-                _afficher_historique(sport_saisi)
+        if _boucle_categorie(sport, sport_saisi):
+            return
 
 
 if __name__ == "__main__":
