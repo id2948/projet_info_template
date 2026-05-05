@@ -51,8 +51,8 @@ Les résultats ajoutés sont sauvegardés dans `data/resultats/nouveaux_matchs.c
 
 ```
 projet_info_template/
-├── __main__.py              ← point d'entrée de l'application
-├── aide_csv.py              ← script utilitaire d'exploration des données
+├── __main__.py              
+├── aide_csv.py              
 ├── requirements.txt
 ├── pyproject.toml
 ├── data/
@@ -61,7 +61,7 @@ projet_info_template/
 │   ├── LOL/
 │   ├── tennis/
 │   ├── volley/
-│   └── resultats/           ← nouveaux matchs enregistrés manuellement
+│   └── resultats/           
 ├── src/
 │   ├── sport.py
 │   ├── Model/

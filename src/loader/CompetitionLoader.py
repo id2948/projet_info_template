@@ -38,14 +38,14 @@ class CompetitionLoader:
 class FootballCompetitionLoader:
 
     DATA_MATCHES = "data/football/match.csv"
-    DATA_TEAMS   = "data/football/team.csv"
+    DATA_TEAMS = "data/football/team.csv"
     DATA_LEAGUES = "data/football/league.csv"
     DATA_COUNTRY = "data/football/country.csv"
 
     def run(self) -> None:
-        df_match   = pd.read_csv(self.DATA_MATCHES)
-        df_team    = pd.read_csv(self.DATA_TEAMS)
-        df_league  = pd.read_csv(self.DATA_LEAGUES)
+        df_match = pd.read_csv(self.DATA_MATCHES)
+        df_team = pd.read_csv(self.DATA_TEAMS)
+        df_league = pd.read_csv(self.DATA_LEAGUES)
         df_country = pd.read_csv(self.DATA_COUNTRY)
         teams = {}
         abbrevs = {}
@@ -70,12 +70,12 @@ class FootballCompetitionLoader:
         print("  4 - Classement général toutes saisons")
         choix = input("\n  Votre choix : ").strip()
 
-        lid    = self._choisir_ligue(leagues, countries, lg_ctry)
-        if lid is None: return
-        saison = self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
+        lid = self._choisir_ligue(leagues, countries, lg_ctry)
+        if lid is None:
+            return saison == self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
 
         df = df_match.copy()
-        if lid:    df = df[df["league_id"] == lid]
+        if lid: df = df[df["league_id"] == lid]
         if saison: df = df[df["season"] == saison]
         if df.empty: print("  Aucun match trouvé."); return
 
@@ -224,10 +224,10 @@ CompetitionLoader.register("basketball", BasketballCompetitionLoader)
 class LoLCompetitionLoader:
 
     DATA_MATCHES = "data/LOL/match.csv"
-    DATA_TEAMS   = "data/LOL/team.csv"
+    DATA_TEAMS = "data/LOL/team.csv"
 
     def run(self) -> None:
-        df      = pd.read_csv(self.DATA_MATCHES)
+        df = pd.read_csv(self.DATA_MATCHES)
         df_team = pd.read_csv(self.DATA_TEAMS)
         teams_info = {}
         for _, row in df_team.iterrows():
@@ -241,16 +241,17 @@ class LoLCompetitionLoader:
                     comp.ajouter_equipe(abrev, Equipe(teams_info.get(abrev, abrev), "LOL", abrev))
                 e = comp.equipes[abrev]
                 e.matchs_joues += 1
-                e.kills   += int(row[f"kills_team_{side}"] or 0)
+                e.kills += int(row[f"kills_team_{side}"] or 0)
                 e.dragons += int(row[f"dragons_team_{side}"] or 0)
-                e.barons  += int(row[f"barons_team_{side}"] or 0)
-                e.gold    += float(row[f"gold_team_{side}"] or 0)
-                e.score_pour   += int(row[f"kills_team_{side}"] or 0)
+                e.barons += int(row[f"barons_team_{side}"] or 0)
+                e.gold += float(row[f"gold_team_{side}"] or 0)
+                e.score_pour += int(row[f"kills_team_{side}"] or 0)
                 e.score_contre += int(row[f"kills_team_{opp}"] or 0)
                 if str(row["winner"]) == abrev:
-                    e.victoires += 1; e.points += 1
+                    e.victoires += 1
+                    e.points += 1
                 else:
-                    e.defaites  += 1
+                    e.defaites += 1
 
         from src.loader.GestionResultats import GestionResultats
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
@@ -317,7 +318,8 @@ class TennisCompetitionLoader:
         elif circuit == "WTA":
             df_m, players = df_wta_m, wta_players
         else:
-            print("  Circuit invalide."); return
+            print("  Circuit invalide.")
+            return
 
         print("\n  1 - Classement général  2 - Classement par tournoi")
         choix = input("  Votre choix : ").strip()
@@ -332,7 +334,8 @@ class TennisCompetitionLoader:
                 df_m = df_m[df_m["tourney_name"] == tournois[idx]]
                 nom_comp = tournois[idx]
             except (ValueError, IndexError):
-                print("  Choix invalide."); return
+                print("  Choix invalide.")
+                return
         else:
             nom_comp = f"{circuit} 2024"
 
@@ -365,12 +368,12 @@ CompetitionLoader.register("tennis", TennisCompetitionLoader)
 
 class VolleyCompetitionLoader:
 
-    DATA_MEN_MATCHES   = "data/volley/match_men.csv"
+    DATA_MEN_MATCHES = "data/volley/match_men.csv"
     DATA_WOMEN_MATCHES = "data/volley/match_women.csv"
-    DATA_COUNTRIES     = "data/volley/country.csv"
+    DATA_COUNTRIES = "data/volley/country.csv"
 
     def run(self) -> None:
-        df_men   = pd.read_csv(self.DATA_MEN_MATCHES)
+        df_men = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
         countries = {}
@@ -382,7 +385,7 @@ class VolleyCompetitionLoader:
         df_women["code_2"] = df_women["country_2"]
 
         cat = input("\n  Catégorie (Hommes / Femmes) : ").strip().lower()
-        df  = df_men if cat in ["hommes", "h", "men"] else df_women
+        df = df_men if cat in ["hommes", "h", "men"] else df_women
         genre = "Hommes" if cat in ["hommes", "h", "men"] else "Femmes"
 
         comp = Competition(f"Volley {genre} — JO 2024", "volley")

@@ -12,7 +12,7 @@ def _equipe(nom: str, victoires: int = 0, nuls: int = 0, defaites: int = 0,
         e.ajouter_match(0, 0)
     for _ in range(defaites):
         e.ajouter_match(0, 1)
-    e.score_pour   += buts_pour
+    e.score_pour += buts_pour
     e.score_contre += buts_contre
     return e
 
@@ -41,9 +41,9 @@ def test_ajouter_equipe_remplace_existante():
 
 def test_classement_par_points():
     c = Competition("Test", "football")
-    c.ajouter_equipe("a", _equipe("Team A", victoires=3))          # 9 pts
-    c.ajouter_equipe("b", _equipe("Team B", victoires=1, nuls=2))  # 5 pts
-    c.ajouter_equipe("c", _equipe("Team C", defaites=3))           # 0 pts
+    c.ajouter_equipe("a", _equipe("Team A", victoires=3))         
+    c.ajouter_equipe("b", _equipe("Team B", victoires=1, nuls=2)) 
+    c.ajouter_equipe("c", _equipe("Team C", defaites=3))          
     cl = c.classement_par("points")
     assert cl[0].nom == "Team A"
     assert cl[1].nom == "Team B"

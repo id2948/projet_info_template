@@ -275,9 +275,9 @@ class LoLJoueurLoader:
         equipes = {}
         pays = {}
         for j in joueurs:
-            if j.position: roles[j.position]   = roles.get(j.position, 0) + 1
-            if j.equipe:   equipes[j.equipe]    = equipes.get(j.equipe, 0) + 1
-            if j.pays:     pays[j.pays]         = pays.get(j.pays, 0) + 1
+            if j.position: roles[j.position] = roles.get(j.position, 0) + 1
+            if j.equipe: equipes[j.equipe] = equipes.get(j.equipe, 0) + 1
+            if j.pays: pays[j.pays] = pays.get(j.pays, 0) + 1
 
         if roles:
             print("  Répartition par rôle :")
@@ -388,7 +388,7 @@ class TennisJoueurLoader:
             pays = {}
             for j in groupe:
                 if j.main: mains[j.main] = mains.get(j.main, 0) + 1
-                if j.pays: pays[j.pays]  = pays.get(j.pays, 0) + 1
+                if j.pays: pays[j.pays] = pays.get(j.pays, 0) + 1
             print(f"\n  ── {label} ({len(groupe)} joueurs) ──")
             if tailles:
                 grand = None
@@ -412,18 +412,18 @@ JoueurLoader.register("tennis", TennisJoueurLoader)
 
 class VolleyJoueurLoader:
 
-    DATA_MEN     = "data/volley/player_men.csv"
-    DATA_WOMEN   = "data/volley/player_women.csv"
+    DATA_MEN = "data/volley/player_men.csv"
+    DATA_WOMEN = "data/volley/player_women.csv"
     DATA_COUNTRIES = "data/volley/country.csv"
 
     def load_all_joueurs(self) -> list[Joueur]:
-        df_men   = pd.read_csv(self.DATA_MEN)
+        df_men = pd.read_csv(self.DATA_MEN)
         df_women = pd.read_csv(self.DATA_WOMEN)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
         countries = {}
         for _, row in df_countries.iterrows():
             countries[row["code"]] = row["country"]
-        df_men["genre"]   = "Hommes"
+        df_men["genre"] = "Hommes"
         df_women["genre"] = "Femmes"
         df = pd.concat([df_men, df_women], ignore_index=True)
         joueurs = []

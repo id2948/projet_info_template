@@ -71,11 +71,11 @@ MatchLoader.register("basketball", BasketballMatchLoader)
 class FootballMatchLoader:
 
     DATA_MATCHES = "data/football/match.csv"
-    DATA_TEAMS   = "data/football/team.csv"
+    DATA_TEAMS = "data/football/team.csv"
 
     def load_all_matches(self) -> list[Match]:
         df_matches = pd.read_csv(self.DATA_MATCHES)
-        df_teams   = pd.read_csv(self.DATA_TEAMS)
+        df_teams = pd.read_csv(self.DATA_TEAMS)
         teams = {}
         for _, row in df_teams.iterrows():
             teams[str(row["team_api_id"])] = row["team_long_name"]
@@ -178,18 +178,18 @@ MatchLoader.register("tennis", TennisMatchLoader)
 
 class VolleyMatchLoader:
 
-    DATA_MEN_MATCHES   = "data/volley/match_men.csv"
+    DATA_MEN_MATCHES = "data/volley/match_men.csv"
     DATA_WOMEN_MATCHES = "data/volley/match_women.csv"
-    DATA_COUNTRIES     = "data/volley/country.csv"
+    DATA_COUNTRIES = "data/volley/country.csv"
 
     def load_all_matches(self) -> list[Match]:
-        df_men   = pd.read_csv(self.DATA_MEN_MATCHES)
+        df_men = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
         countries = {}
         for _, row in df_countries.iterrows():
             countries[row["code"]] = row["country"]
-        df_men   = df_men.rename(columns={"country_code_1": "code_1", "country_code_2": "code_2"})
+        df_men = df_men.rename(columns={"country_code_1": "code_1", "country_code_2": "code_2"})
         df_women = df_women.rename(columns={"country_1": "code_1", "country_2": "code_2"})
         df = pd.concat([df_men, df_women], ignore_index=True)
         df_out = pd.DataFrame({

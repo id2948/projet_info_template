@@ -15,30 +15,30 @@ class Equipe:
     """
 
     def __init__(self, nom: str, sport: str, abreviation: str | None = None):
-        self.nom         = nom
-        self.sport       = sport
+        self.nom = nom
+        self.sport = sport
         self.abreviation = abreviation
 
         # Stats communes
         self.matchs_joues = 0
-        self.victoires    = 0
-        self.defaites     = 0
-        self.nuls         = 0
-        self.points       = 0
-        self.score_pour   = 0.0
+        self.victoires = 0
+        self.defaites = 0
+        self.nuls = 0
+        self.points = 0
+        self.score_pour = 0.0
         self.score_contre = 0.0
 
         # Stats basketball
-        self.rebonds       = 0.0
-        self.passes        = 0.0
+        self.rebonds = 0.0
+        self.passes = 0.0
         self.interceptions = 0.0
-        self.contres       = 0.0
+        self.contres = 0.0
 
         # Stats LoL
-        self.kills   = 0
+        self.kills = 0
         self.dragons = 0
-        self.barons  = 0
-        self.gold    = 0.0
+        self.barons = 0
+        self.gold = 0.0
 
     @property
     def difference_score(self) -> float:
@@ -63,14 +63,14 @@ class Equipe:
             Indique si le sport autorise les matchs nuls (par défaut True).
         """
         self.matchs_joues += 1
-        self.score_pour   += score_pour
+        self.score_pour += score_pour
         self.score_contre += score_contre
 
         if score_pour > score_contre:
             self.victoires += 1
-            self.points    += 3 if nul_possible else 1
+            self.points += 3 if nul_possible else 1
         elif nul_possible and score_pour == score_contre:
-            self.nuls   += 1
+            self.nuls += 1
             self.points += 1
         else:
             self.defaites += 1

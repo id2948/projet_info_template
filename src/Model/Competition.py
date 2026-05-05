@@ -14,8 +14,8 @@ class Competition:
     """
 
     def __init__(self, nom: str, sport: str):
-        self.nom    = nom
-        self.sport  = sport
+        self.nom = nom
+        self.sport = sport
         self.equipes: dict[str, Equipe] = {}
 
     def ajouter_equipe(self, cle: str, equipe: Equipe) -> None:

@@ -37,11 +37,11 @@ class EquipeLoader:
 class FootballEquipeLoader:
 
     DATA_MATCHES = "data/football/match.csv"
-    DATA_TEAMS   = "data/football/team.csv"
+    DATA_TEAMS = "data/football/team.csv"
 
     def run(self) -> None:
         df_match = pd.read_csv(self.DATA_MATCHES)
-        df_team  = pd.read_csv(self.DATA_TEAMS)
+        df_team = pd.read_csv(self.DATA_TEAMS)
         teams = {}
         for _, row in df_team.iterrows():
             teams[row["team_api_id"]] = row["team_long_name"]
@@ -157,7 +157,7 @@ class LoLEquipeLoader:
     DATA_TEAMS   = "data/LOL/team.csv"
 
     def run(self) -> None:
-        df      = pd.read_csv(self.DATA_MATCHES)
+        df = pd.read_csv(self.DATA_MATCHES)
         df_team = pd.read_csv(self.DATA_TEAMS)
         teams_info = {}
         for _, row in df_team.iterrows():
@@ -175,17 +175,18 @@ class LoLEquipeLoader:
         for _, row in df.iterrows():
             for side, opp in [("blue", "red"), ("red", "blue")]:
                 if str(row[f"team_{side}"]) == abrev:
-                    e.matchs_joues  += 1
-                    e.kills         += int(row[f"kills_team_{side}"] or 0)
-                    e.dragons       += int(row[f"dragons_team_{side}"] or 0)
-                    e.barons        += int(row[f"barons_team_{side}"] or 0)
-                    e.gold          += float(row[f"gold_team_{side}"] or 0)
-                    e.score_pour    += int(row[f"kills_team_{side}"] or 0)
-                    e.score_contre  += int(row[f"kills_team_{opp}"] or 0)
+                    e.matchs_joues += 1
+                    e.kills += int(row[f"kills_team_{side}"] or 0)
+                    e.dragons += int(row[f"dragons_team_{side}"] or 0)
+                    e.barons += int(row[f"barons_team_{side}"] or 0)
+                    e.gold += float(row[f"gold_team_{side}"] or 0)
+                    e.score_pour += int(row[f"kills_team_{side}"] or 0)
+                    e.score_contre += int(row[f"kills_team_{opp}"] or 0)
                     if str(row["winner"]) == abrev:
-                        e.victoires += 1; e.points += 1
+                        e.victoires += 1
+                        e.points += 1
                     else:
-                        e.defaites  += 1
+                        e.defaites += 1
 
         from src.loader.GestionResultats import GestionResultats
         nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
@@ -231,7 +232,8 @@ class TennisEquipeLoader:
         elif circuit == "WTA":
             df_m, players = df_wta_m, wta_players
         else:
-            print("  Circuit invalide."); return
+            print("  Circuit invalide.")
+            return
 
         nom = input("  Nom du joueur : ").strip()
         pid = None
@@ -267,24 +269,24 @@ EquipeLoader.register("tennis", TennisEquipeLoader)
 
 class VolleyEquipeLoader:
 
-    DATA_MEN_MATCHES   = "data/volley/match_men.csv"
+    DATA_MEN_MATCHES = "data/volley/match_men.csv"
     DATA_WOMEN_MATCHES = "data/volley/match_women.csv"
-    DATA_COUNTRIES     = "data/volley/country.csv"
+    DATA_COUNTRIES = "data/volley/country.csv"
 
     def run(self) -> None:
-        df_men   = pd.read_csv(self.DATA_MEN_MATCHES)
+        df_men = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
         countries = {}
         for _, row in df_countries.iterrows():
             countries[row["code"]] = row["country"]
-        df_men["code_1"]   = df_men["country_code_1"]
-        df_men["code_2"]   = df_men["country_code_2"]
+        df_men["code_1"] = df_men["country_code_1"]
+        df_men["code_2"] = df_men["country_code_2"]
         df_women["code_1"] = df_women["country_1"]
         df_women["code_2"] = df_women["country_2"]
 
         cat = input("\n  Catégorie (Hommes / Femmes) : ").strip().lower()
-        df  = df_men if cat in ["hommes", "h", "men"] else df_women
+        df = df_men if cat in ["hommes", "h", "men"] else df_women
         genre = "Hommes" if cat in ["hommes", "h", "men"] else "Femmes"
 
         nom = input("  Nom du pays : ").strip()
@@ -294,7 +296,8 @@ class VolleyEquipeLoader:
                 code = c
                 break
         if not code:
-            print("  Pays non trouvé."); return
+            print("  Pays non trouvé.")
+            return
 
         e = Equipe(countries[code], "volley", code)
         for _, row in df.iterrows():
