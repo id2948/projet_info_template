@@ -1,21 +1,18 @@
 import csv
 import os
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from src.Model.Match import Match
-    from src.Model.Equipe import Equipe
-    from src.Model.Competition import Competition
+from src.Model.Match import Match
+from src.Model.Equipe import Equipe
 
 FICHIER_RESULTATS = "data/resultats/nouveaux_matchs.csv"
 COLONNES = ["sport", "date", "equipe_1", "equipe_2", "score_1", "score_2"]
 
 
-class ResultatManager:
-    """Gestion de la persistance des nouveaux résultats de matchs.
+class GestionResultats:
+    """Gestion des nouveaux résultats ajoutés manuellement.
 
-    Les résultats sont stockés dans un fichier CSV unique, indépendant
-    du sport, et automatiquement inclus lors du chargement des données.
+    Les résultats sont stockés dans un fichier CSV unique,
+    et automatiquement inclus lors du chargement des données.
     """
 
     @staticmethod
@@ -64,10 +61,9 @@ class ResultatManager:
 
         Returns
         -------
-        list[Match]
+        list
             Liste des nouveaux matchs enregistrés pour ce sport.
         """
-        from src.Model.Match import Match
         if not os.path.exists(FICHIER_RESULTATS):
             return []
         resultats = []
@@ -86,7 +82,7 @@ class ResultatManager:
 
     @staticmethod
     def _correspond(nom_a: str, nom_b: str) -> bool:
-        """Vérifie si deux noms d'équipe correspondent (sous-chaîne bidirectionnelle).
+        """Vérifie si deux noms d'équipe se correspondent.
 
         Parameters
         ----------
@@ -104,11 +100,8 @@ class ResultatManager:
         return a in b or b in a
 
     @staticmethod
-    def appliquer_a_equipe(equipe, nom_filtre: str, nul_possible: bool = True) -> int:
+    def appliquer_a_equipe(equipe: Equipe, nom_filtre: str, nul_possible: bool = True) -> int:
         """Applique les nouveaux résultats à un objet Equipe.
-
-        Met à jour les stats de l'équipe (victoires, défaites, points, scores)
-        en prenant en compte les matchs nouvellement enregistrés.
 
         Parameters
         ----------
@@ -125,21 +118,18 @@ class ResultatManager:
             Nombre de nouveaux résultats appliqués.
         """
         nb = 0
-        for m in ResultatManager.charger(equipe.sport):
-            if ResultatManager._correspond(nom_filtre, m.equipe_1):
+        for m in GestionResultats.charger(equipe.sport):
+            if GestionResultats._correspond(nom_filtre, m.equipe_1):
                 equipe.ajouter_match(m.score_1, m.score_2, nul_possible)
                 nb += 1
-            elif ResultatManager._correspond(nom_filtre, m.equipe_2):
+            elif GestionResultats._correspond(nom_filtre, m.equipe_2):
                 equipe.ajouter_match(m.score_2, m.score_1, nul_possible)
                 nb += 1
         return nb
 
     @staticmethod
     def appliquer_a_competition(comp, nul_possible: bool = True) -> int:
-        """Applique les nouveaux résultats à tous les objets Equipe d'une Competition.
-
-        Les équipes déjà présentes dans la compétition sont mises à jour.
-        Les nouvelles équipes sont créées et ajoutées à la compétition.
+        """Applique les nouveaux résultats à toutes les équipes d'une Competition.
 
         Parameters
         ----------
@@ -153,23 +143,20 @@ class ResultatManager:
         int
             Nombre de nouveaux matchs appliqués.
         """
-        from src.Model.Equipe import Equipe as EquipeModel
         nb = 0
-        for m in ResultatManager.charger(comp.sport):
+        for m in GestionResultats.charger(comp.sport):
             e1 = e2 = None
             for eq in comp.equipes.values():
-                if ResultatManager._correspond(m.equipe_1, eq.nom):
+                if GestionResultats._correspond(m.equipe_1, eq.nom):
                     e1 = eq
-                if ResultatManager._correspond(m.equipe_2, eq.nom):
+                if GestionResultats._correspond(m.equipe_2, eq.nom):
                     e2 = eq
-
             if e1 is None:
-                e1 = EquipeModel(m.equipe_1, comp.sport)
+                e1 = Equipe(m.equipe_1, comp.sport)
                 comp.ajouter_equipe(m.equipe_1, e1)
             if e2 is None:
-                e2 = EquipeModel(m.equipe_2, comp.sport)
+                e2 = Equipe(m.equipe_2, comp.sport)
                 comp.ajouter_equipe(m.equipe_2, e2)
-
             e1.ajouter_match(m.score_1, m.score_2, nul_possible)
             e2.ajouter_match(m.score_2, m.score_1, nul_possible)
             nb += 1
@@ -177,7 +164,7 @@ class ResultatManager:
 
     @staticmethod
     def lister(sport: str | None = None) -> list:
-        """Retourne tous les résultats enregistrés, optionnellement filtrés par sport.
+        """Retourne tous les résultats enregistrés, filtrés par sport si précisé.
 
         Parameters
         ----------
@@ -186,10 +173,9 @@ class ResultatManager:
 
         Returns
         -------
-        list[Match]
+        list
             Liste des matchs enregistrés.
         """
-        from src.Model.Match import Match
         if not os.path.exists(FICHIER_RESULTATS):
             return []
         resultats = []

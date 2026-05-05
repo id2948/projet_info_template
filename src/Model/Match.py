@@ -1,4 +1,3 @@
-from typing import Optional
 from src.sport import Sport
 
 
@@ -49,16 +48,16 @@ class Match:
         score_1:      float,
         score_2:      float,
         sport:        str,
-        season:       Optional[str] = None,
-        season_type:  Optional[str] = None,
-        league_id:    Optional[float] = None,
-        stage:        Optional[str] = None,
-        patch:        Optional[str] = None,
-        week:         Optional[int] = None,
-        winner:       Optional[str] = None,
-        tourney_name: Optional[str] = None,
-        surface:      Optional[str] = None,
-        round:        Optional[str] = None,
+        season:       str | None = None,
+        season_type:  str | None = None,
+        league_id:    float | None = None,
+        stage:        str | None = None,
+        patch:        str | None = None,
+        week:         int | None = None,
+        winner:       str | None = None,
+        tourney_name: str | None = None,
+        surface:      str | None = None,
+        round:        str | None = None,
     ):
         self.date = date
         self.equipe_1 = equipe_1
@@ -216,7 +215,10 @@ class Match:
             equipe_filtre = None
             titre = sport.nom
 
-        match_record = max(matchs_filtres, key=lambda m: (m.score_1 or 0) + (m.score_2 or 0))
+        match_record = matchs_filtres[0]
+        for m in matchs_filtres[1:]:
+            if (m.score_1 or 0) + (m.score_2 or 0) > (match_record.score_1 or 0) + (match_record.score_2 or 0):
+                match_record = m
 
         print(f"\n  === Statistiques des matchs — {titre} ===\n")
         print(f"  Nombre total de matchs   : {len(matchs_filtres)}")
@@ -226,9 +228,8 @@ class Match:
             victoires = defaites = nuls = 0
             points_marques: list[float] = []
             points_encaisses: list[float] = []
-            serie_actuelle = serie_max = 0
 
-            for m in sorted(matchs_filtres, key=lambda m: str(m.date)):
+            for m in matchs_filtres:
                 if equipe_filtre.lower() in m.equipe_1.lower():
                     marques, encaisses = m.score_1 or 0, m.score_2 or 0
                 else:
@@ -239,25 +240,20 @@ class Match:
 
                 if marques > encaisses:
                     victoires += 1
-                    serie_actuelle += 1
-                    serie_max = max(serie_max, serie_actuelle)
                 elif marques < encaisses:
                     defaites += 1
-                    serie_actuelle = 0
                 else:
                     nuls += 1
-                    serie_actuelle = 0
 
             moy_m = sum(points_marques)   / len(points_marques)   if points_marques   else 0
             moy_e = sum(points_encaisses) / len(points_encaisses) if points_encaisses else 0
 
-            print(f"  Victoires                : {victoires}")
-            print(f"  Défaites                 : {defaites}")
+            print(f"  Victoires : {victoires}")
+            print(f"  Défaites  : {defaites}")
             if nuls:
-                print(f"  Nuls                     : {nuls}")
+                print(f"  Nuls      : {nuls}")
             print(f"  Moyenne points marqués   : {moy_m:.1f}")
             print(f"  Moyenne points encaissés : {moy_e:.1f}")
-            print(f"  Série de victoires max   : {serie_max}")
 
     @staticmethod
     def _afficher(resultats: list, limite: int = 20) -> None:

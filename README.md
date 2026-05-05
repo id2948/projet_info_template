@@ -53,6 +53,7 @@ Les résultats ajoutés sont sauvegardés dans `data/resultats/nouveaux_matchs.c
 projet_info_template/
 ├── main.py
 ├── requirements.txt
+
 ├── pyproject.toml
 ├── data/
 │   ├── basketball/

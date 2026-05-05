@@ -1,4 +1,3 @@
-from typing import Optional
 from src.sport import Sport
 
 
@@ -35,15 +34,15 @@ class Joueur:
         self,
         nom:            str,
         sport:          str,
-        prenom:         Optional[str] = None,
-        pseudo:         Optional[str] = None,
-        equipe:         Optional[str] = None,
-        position:       Optional[str] = None,
-        date_naissance: Optional[str] = None,
-        taille:         Optional[float] = None,
-        poids:          Optional[float] = None,
-        pays:           Optional[str] = None,
-        main:           Optional[str] = None,
+        prenom:         str | None = None,
+        pseudo:         str | None = None,
+        equipe:         str | None = None,
+        position:       str | None = None,
+        date_naissance: str | None = None,
+        taille:         float | None = None,
+        poids:          float | None = None,
+        pays:           str | None = None,
+        main:           str | None = None,
     ):
         self.nom = nom
         self.sport = sport

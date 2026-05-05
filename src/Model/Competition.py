@@ -30,22 +30,23 @@ class Competition:
         """
         self.equipes[cle] = equipe
 
-    def classement_par(self, *criteres) -> list[Equipe]:
-        """Trie les équipes selon les critères donnés (attributs de Equipe).
+    def classement_par(self, critere: str) -> list:
+        """Trie les équipes selon un attribut de Equipe, du plus grand au plus petit.
 
         Parameters
         ----------
-        *criteres : str
-            Noms d'attributs de Equipe, triés de manière décroissante.
+        critere : str
+            Nom d'un attribut de Equipe (ex : "points", "victoires").
 
         Returns
         -------
-        list[Equipe]
+        list
             Équipes triées du meilleur au moins bon.
         """
         return sorted(
             self.equipes.values(),
-            key=lambda e: tuple(-getattr(e, c) for c in criteres)
+            key=lambda e: getattr(e, critere),
+            reverse=True,
         )
 
     def __repr__(self):

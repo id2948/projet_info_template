@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pandas as pd
 
 from src.sport import Sport
@@ -16,9 +14,9 @@ class CompetitionLoader:
 
     _loaders = {}
 
-    @classmethod
-    def register(cls, sport_nom: str, loader) -> None:
-        cls._loaders[sport_nom] = loader
+    @staticmethod
+    def register(sport_nom: str, loader) -> None:
+        CompetitionLoader._loaders[sport_nom] = loader
 
     def run(self, sport: Sport) -> None:
         """Lance le menu de classement pour le sport sélectionné.
@@ -49,11 +47,21 @@ class FootballCompetitionLoader:
         df_team    = pd.read_csv(self.DATA_TEAMS)
         df_league  = pd.read_csv(self.DATA_LEAGUES)
         df_country = pd.read_csv(self.DATA_COUNTRY)
-        teams    = dict(zip(df_team["team_api_id"],  df_team["team_long_name"]))
-        abbrevs  = dict(zip(df_team["team_api_id"],  df_team["team_short_name"]))
-        leagues  = dict(zip(df_league["id"],          df_league["name"]))
-        countries= dict(zip(df_country["id"],         df_country["name"]))
-        lg_ctry  = dict(zip(df_league["id"],          df_league["country_id"]))
+        teams = {}
+        abbrevs = {}
+        for _, row in df_team.iterrows():
+            teams[row["team_api_id"]] = row["team_long_name"]
+            abbrevs[row["team_api_id"]] = row["team_short_name"]
+
+        leagues = {}
+        lg_ctry = {}
+        for _, row in df_league.iterrows():
+            leagues[row["id"]] = row["name"]
+            lg_ctry[row["id"]] = row["country_id"]
+
+        countries = {}
+        for _, row in df_country.iterrows():
+            countries[row["id"]] = row["name"]
 
         print("\n  Que voulez-vous faire ?")
         print("  1 - Classement d'une ligue pour une saison")
@@ -72,12 +80,12 @@ class FootballCompetitionLoader:
         if df.empty: print("  Aucun match trouvé."); return
 
         comp = self._construire(df, teams, abbrevs, leagues.get(lid, str(lid)))
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_competition(comp, nul_possible=True)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_competition(comp, nul_possible=True)
         if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         if choix == "1":
-            cl = comp.classement_par("points", "difference_score", "score_pour")
+            cl = comp.classement_par("points")
             self._afficher_foot(cl, f"{comp.nom} — {saison}")
         elif choix == "2":
             cl = comp.classement_par("score_pour")
@@ -97,7 +105,7 @@ class FootballCompetitionLoader:
                 print(f"  {i:<4}{e.nom:<30}{e.score_contre:>10.0f}{moy:>10.2f}")
         elif choix == "4":
             comp_all = self._construire(df_match, teams, abbrevs, "Toutes ligues — Toutes saisons")
-            cl = comp_all.classement_par("points", "difference_score")
+            cl = comp_all.classement_par("points")
             self._afficher_foot(cl[:30], comp_all.nom)
 
     def _construire(self, df, teams, abbrevs, nom_comp: str) -> Competition:
@@ -112,7 +120,7 @@ class FootballCompetitionLoader:
             comp.equipes[str(aid)].ajouter_match(ag, hg)
         return comp
 
-    def _choisir_ligue(self, leagues, countries, lg_ctry) -> Optional[int]:
+    def _choisir_ligue(self, leagues, countries, lg_ctry) -> int | None:
         print("\n  Ligues disponibles :")
         for lid, lname in leagues.items():
             print(f"    {lid} - {lname} ({countries.get(lg_ctry.get(lid), '?')})")
@@ -121,7 +129,7 @@ class FootballCompetitionLoader:
         except ValueError:
             return None
 
-    def _choisir_saison(self, df_match) -> Optional[str]:
+    def _choisir_saison(self, df_match) -> str | None:
         saisons = sorted(df_match["season"].unique())
         print("\n  Saisons :", ", ".join(saisons))
         saison = input("  Saison (ex: 2014/2015) : ").strip()
@@ -150,8 +158,11 @@ class BasketballCompetitionLoader:
     def run(self) -> None:
         df_game = pd.read_csv(self.DATA_GAMES)
         df_team = pd.read_csv(self.DATA_TEAMS)
-        teams   = dict(zip(df_team["id"], df_team["full_name"]))
-        abbrevs = dict(zip(df_team["id"], df_team["abbreviation"]))
+        teams = {}
+        abbrevs = {}
+        for _, row in df_team.iterrows():
+            teams[row["id"]] = row["full_name"]
+            abbrevs[row["id"]] = row["abbreviation"]
 
         print("\n  Type de saison :", ", ".join(df_game["season_type"].unique()))
         season_type = input("  Type de saison : ").strip()
@@ -172,8 +183,8 @@ class BasketballCompetitionLoader:
             ea.rebonds += float(row["reb_away"] or 0); ea.passes += float(row["ast_away"] or 0)
             ea.interceptions += float(row["stl_away"] or 0); ea.contres += float(row["blk_away"] or 0)
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_competition(comp, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
         if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print("\n  Que voulez-vous faire ?")
@@ -182,7 +193,7 @@ class BasketballCompetitionLoader:
         choix = input("\n  Votre choix : ").strip()
 
         if choix == "1":
-            cl = comp.classement_par("victoires", "difference_score")
+            cl = comp.classement_par("victoires")
             print(f"\n=== {comp.nom} ===\n")
             print(f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'D':>4}{'Pts+':>6}{'Pts-':>6}{'Diff':>7}")
             print("  " + "─" * 65)
@@ -218,7 +229,9 @@ class LoLCompetitionLoader:
     def run(self) -> None:
         df      = pd.read_csv(self.DATA_MATCHES)
         df_team = pd.read_csv(self.DATA_TEAMS)
-        teams_info = dict(zip(df_team["team_abbreviation"], df_team["team"]))
+        teams_info = {}
+        for _, row in df_team.iterrows():
+            teams_info[row["team_abbreviation"]] = row["team"]
 
         comp = Competition("LoL EMEA 2025", "LOL")
         for _, row in df.iterrows():
@@ -239,8 +252,8 @@ class LoLCompetitionLoader:
                 else:
                     e.defaites  += 1
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_competition(comp, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
         if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print("\n  Que voulez-vous faire ?")
@@ -248,7 +261,7 @@ class LoLCompetitionLoader:
         choix = input("\n  Votre choix : ").strip()
 
         if choix == "1":
-            cl = comp.classement_par("victoires", "difference_score")
+            cl = comp.classement_par("victoires")
             print(f"\n=== {comp.nom} ===\n")
             print(f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'D':>4}{'Win%':>7}")
             print("  " + "─" * 52)
@@ -261,7 +274,7 @@ class LoLCompetitionLoader:
                 moy = e.kills / e.matchs_joues if e.matchs_joues else 0
                 print(f"  {i}. {e.nom:<25} {e.kills} kills  (moy: {moy:.1f}/match)")
         elif choix == "3":
-            cl = sorted(comp.equipes.values(), key=lambda e: -(e.dragons + e.barons))
+            cl = sorted(comp.equipes.values(), key=lambda e: e.dragons + e.barons, reverse=True)
             print(f"\n=== Objectifs — {comp.nom} ===\n")
             for i, e in enumerate(cl, 1):
                 print(f"  {i}. {e.nom:<25} Dragons: {e.dragons}  Barons: {e.barons}")
@@ -290,8 +303,13 @@ class TennisCompetitionLoader:
         df_wta_p = pd.read_csv(self.DATA_WTA_PLAYERS)
         df_atp_m = pd.read_csv(self.DATA_ATP_MATCHES)
         df_wta_m = pd.read_csv(self.DATA_WTA_MATCHES)
-        atp_players = dict(zip(df_atp_p["player_id"].astype(str), df_atp_p["name_first"] + " " + df_atp_p["name_last"]))
-        wta_players = dict(zip(df_wta_p["player_id"].astype(str), df_wta_p["name_first"] + " " + df_wta_p["name_last"]))
+        atp_players = {}
+        for _, row in df_atp_p.iterrows():
+            atp_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
+
+        wta_players = {}
+        for _, row in df_wta_p.iterrows():
+            wta_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
 
         circuit = input("\n  Circuit (ATP / WTA) : ").strip().upper()
         if circuit == "ATP":
@@ -328,8 +346,8 @@ class TennisCompetitionLoader:
             comp.equipes[wid].ajouter_match(1, 0, nul_possible=False)
             comp.equipes[lid].ajouter_match(0, 1, nul_possible=False)
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_competition(comp, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
         if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         cl = comp.classement_par("victoires")
@@ -355,7 +373,9 @@ class VolleyCompetitionLoader:
         df_men   = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
-        countries = dict(zip(df_countries["code"], df_countries["country"]))
+        countries = {}
+        for _, row in df_countries.iterrows():
+            countries[row["code"]] = row["country"]
         df_men["code_1"]   = df_men["country_code_1"]
         df_men["code_2"]   = df_men["country_code_2"]
         df_women["code_1"] = df_women["country_1"]
@@ -375,15 +395,15 @@ class VolleyCompetitionLoader:
             comp.equipes[c1].ajouter_match(s1, s2, nul_possible=False)
             comp.equipes[c2].ajouter_match(s2, s1, nul_possible=False)
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_competition(comp, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
         if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print("\n  1 - Classement général  2 - Classement sets gagnés")
         choix = input("  Votre choix : ").strip()
 
         if choix == "1":
-            cl = comp.classement_par("victoires", "difference_score")
+            cl = comp.classement_par("victoires")
             print(f"\n=== {comp.nom} ===\n")
             print(f"  {'#':<4}{'Pays':<25}{'MJ':>4}{'V':>4}{'D':>4}{'Sets+':>7}{'Sets-':>7}{'Diff':>7}")
             print("  " + "─" * 62)

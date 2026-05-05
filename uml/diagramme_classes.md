@@ -5,6 +5,9 @@ Ce diagramme peut être rendu :
 - **VS Code** : extension *PlantUML*
 - **GitHub** : via le bloc Mermaid ci-dessous (rendu natif)
 
+Note : seuls les attributs principaux de `Match` sont représentés pour la lisibilité
+(`season`, `winner`, `patch`, `surface`, `round`, `tourney_name` sont omis).
+
 ---
 
 ## Version Mermaid (rendu natif GitHub)
@@ -26,9 +29,7 @@ classDiagram
         +score_1 : float
         +score_2 : float
         +sport : str
-        +season : str
-        +winner : str
-        +run_menu(sport)$
+        +run_menu(sport : Sport)$
     }
 
     class Joueur {
@@ -41,8 +42,7 @@ classDiagram
         +taille : float
         +poids : float
         +pays : str
-        +main : str
-        +run_menu(sport)$
+        +run_menu(sport : Sport)$
     }
 
     class Equipe {
@@ -57,11 +57,10 @@ classDiagram
         +score_contre : float
         +rebonds : float
         +kills : int
-        +dragons : int
         +difference_score() float
         +winrate() float
         +ajouter_match(s1, s2, nul)
-        +run_menu(sport)$
+        +run_menu(sport : Sport)$
     }
 
     class Competition {
@@ -70,7 +69,7 @@ classDiagram
         +equipes : dict
         +ajouter_equipe(cle, equipe)
         +classement_par(*criteres) list
-        +run_menu(sport)$
+        +run_menu(sport : Sport)$
     }
 
     %% ── Chargeurs ─────────────────────────────────────
@@ -78,26 +77,26 @@ classDiagram
     class MatchLoader {
         -_loaders : dict
         +register(sport, loader)$
-        +load_all_matches(sport) list
+        +load_all_matches(sport : Sport) list
     }
 
     class JoueurLoader {
         -_loaders : dict
         +register(sport, loader)$
-        +load_all_joueurs(sport) list
-        +afficher_stats(joueurs, sport)
+        +load_all_joueurs(sport : Sport) list
+        +afficher_stats(joueurs, sport : Sport)
     }
 
     class EquipeLoader {
         -_loaders : dict
         +register(sport, loader)$
-        +run(sport)
+        +run(sport : Sport)
     }
 
     class CompetitionLoader {
         -_loaders : dict
         +register(sport, loader)$
-        +run(sport)
+        +run(sport : Sport)
     }
 
     class ResultatManager {
@@ -112,10 +111,17 @@ classDiagram
 
     Competition "1" *-- "0..*" Equipe : contient
 
-    Match ..> MatchLoader : délègue à
-    Joueur ..> JoueurLoader : délègue à
-    Equipe ..> EquipeLoader : délègue à
-    Competition ..> CompetitionLoader : délègue à
+    Sport ..> Match : paramètre de run_menu
+    Sport ..> Joueur : paramètre de run_menu
+    Sport ..> Equipe : paramètre de run_menu
+    Sport ..> Competition : paramètre de run_menu
+    Sport ..> MatchLoader : paramètre de load_all_matches
+    Sport ..> JoueurLoader : paramètre de load_all_joueurs
+
+    Match ..> MatchLoader : délègue run_menu à
+    Joueur ..> JoueurLoader : délègue run_menu à
+    Equipe ..> EquipeLoader : délègue run_menu à
+    Competition ..> CompetitionLoader : délègue run_menu à
 
     MatchLoader ..> ResultatManager : enrichit avec
     EquipeLoader ..> ResultatManager : enrichit avec
@@ -133,22 +139,20 @@ classDiagram
 
 ### Pattern Dispatcher + Registre
 
-Chaque `Loader` (MatchLoader, JoueurLoader, EquipeLoader, CompetitionLoader) applique le même
-pattern :
+Chaque `Loader` applique le même pattern :
 
 ```
-Loader.register("football", FootballLoader)   ← à l'import du module
-Loader.register("basketball", BasketballLoader)
+MatchLoader.register("football", FootballMatchLoader)
+MatchLoader.register("basketball", BasketballMatchLoader)
 ...
-Loader().run(sport)   ← dispatch automatique selon le sport
+MatchLoader().load_all_matches(sport)   ← dispatch automatique
 ```
 
-Ajouter un sport revient à créer une classe dans le fichier loader concerné
+Ajouter un nouveau sport revient à créer une classe dans le fichier loader concerné
 et à appeler `register` — sans modifier aucune autre classe.
 
 ### ResultatManager
 
-Classe utilitaire (méthodes statiques) qui gère la persistance des nouveaux
-résultats dans `data/resultats/nouveaux_matchs.csv`. Les loaders l'appellent
-automatiquement pour intégrer les résultats ajoutés manuellement aux
-statistiques et classements existants.
+Classe utilitaire à méthodes statiques qui persiste les nouveaux résultats dans
+`data/resultats/nouveaux_matchs.csv`. Les loaders l'appellent automatiquement
+pour intégrer ces résultats aux statistiques et classements existants.

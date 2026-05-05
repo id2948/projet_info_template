@@ -16,6 +16,20 @@ def _age(dob_str: str) -> int | None:
         return None
 
 
+def _pct_main(groupe: list, main: str) -> str:
+    """Calcule le pourcentage de joueurs utilisant une main donnée."""
+    total = 0
+    nb = 0
+    for j in groupe:
+        if j.main:
+            total += 1
+            if j.main == main:
+                nb += 1
+    if total == 0:
+        return "—"
+    return f"{nb/total*100:.0f}%"
+
+
 class JoueurLoader:
     """Dispatcher pour le chargement et les statistiques des joueurs.
 
@@ -25,9 +39,9 @@ class JoueurLoader:
 
     _loaders = {}
 
-    @classmethod
-    def register(cls, sport_nom: str, loader) -> None:
-        cls._loaders[sport_nom] = loader
+    @staticmethod
+    def register(sport_nom: str, loader) -> None:
+        JoueurLoader._loaders[sport_nom] = loader
 
     def load_all_joueurs(self, sport: Sport) -> list[Joueur]:
         """Charge tous les joueurs du sport sélectionné.
@@ -87,7 +101,9 @@ class BasketballJoueurLoader:
     def load_all_joueurs(self) -> list[Joueur]:
         df_players = pd.read_csv(self.DATA_PLAYERS)
         df_teams   = pd.read_csv(self.DATA_TEAMS)
-        teams = dict(zip(df_teams["id"].astype(str), df_teams["full_name"]))
+        teams = {}
+        for _, row in df_teams.iterrows():
+            teams[str(row["id"])] = row["full_name"]
         joueurs = []
         for _, row in df_players.iterrows():
             joueurs.append(Joueur(
@@ -114,17 +130,27 @@ class BasketballJoueurLoader:
         tailles = [j.taille for j in joueurs if j.taille is not None]
         poids_l = [j.poids  for j in joueurs if j.poids  is not None]
         if tailles:
-            grand = max(joueurs, key=lambda j: j.taille or 0)
-            petit = min(joueurs, key=lambda j: j.taille or float("inf"))
+            grand = None
+            petit = None
+            for j in joueurs:
+                if j.taille is None:
+                    continue
+                if grand is None or j.taille > grand.taille:
+                    grand = j
+                if petit is None or j.taille < petit.taille:
+                    petit = j
             print(f"  Taille moyenne  : {sum(tailles)/len(tailles):.1f} cm")
             print(f"  Plus grand      : {grand.prenom or ''} {grand.nom} — {grand.taille} cm")
             print(f"  Plus petit      : {petit.prenom or ''} {petit.nom} — {petit.taille} cm")
         if poids_l:
-            lourd = max(joueurs, key=lambda j: j.poids or 0)
+            lourd = None
+            for j in joueurs:
+                if j.poids is not None and (lourd is None or j.poids > lourd.poids):
+                    lourd = j
             print(f"  Poids moyen     : {sum(poids_l)/len(poids_l):.1f} kg")
             print(f"  Plus lourd      : {lourd.prenom or ''} {lourd.nom} — {lourd.poids:.1f} kg")
 
-        positions: dict[str, dict] = {}
+        positions = {}
         for j in joueurs:
             if not j.position:
                 continue
@@ -140,7 +166,7 @@ class BasketballJoueurLoader:
             print(f"\n  Répartition par position :\n")
             print(f"  {'Position':<22} {'Nb':>4}   {'T. moy (cm)':>11}   {'P. moy (kg)':>11}")
             print("  " + "─" * 54)
-            for pos, d in sorted(positions.items(), key=lambda x: -x[1]["nb"]):
+            for pos, d in sorted(positions.items(), key=lambda x: x[1]["nb"], reverse=True):
                 t = f"{sum(d['tailles'])/len(d['tailles']):.1f}" if d["tailles"] else "—"
                 p = f"{sum(d['poids'])/len(d['poids']):.1f}"    if d["poids"]   else "—"
                 print(f"  {pos:<22} {d['nb']:>4}   {t:>11}   {p:>11}")
@@ -173,36 +199,50 @@ class FootballJoueurLoader:
         tailles = [j.taille for j in joueurs if j.taille is not None]
         poids_l = [j.poids  for j in joueurs if j.poids  is not None]
         if tailles:
-            grand = max(joueurs, key=lambda j: j.taille or 0)
-            petit = min(joueurs, key=lambda j: j.taille or float("inf"))
+            grand = None
+            petit = None
+            for j in joueurs:
+                if j.taille is None:
+                    continue
+                if grand is None or j.taille > grand.taille:
+                    grand = j
+                if petit is None or j.taille < petit.taille:
+                    petit = j
             print(f"  Taille moyenne  : {sum(tailles)/len(tailles):.1f} cm")
             print(f"  Plus grand      : {grand.nom} — {grand.taille} cm")
             print(f"  Plus petit      : {petit.nom} — {petit.taille} cm")
         if poids_l:
-            lourd = max(joueurs, key=lambda j: j.poids or 0)
-            leger = min(joueurs, key=lambda j: j.poids or float("inf"))
+            lourd = None
+            leger = None
+            for j in joueurs:
+                if j.poids is None:
+                    continue
+                if lourd is None or j.poids > lourd.poids:
+                    lourd = j
+                if leger is None or j.poids < leger.poids:
+                    leger = j
             print(f"  Poids moyen     : {sum(poids_l)/len(poids_l):.1f} kg")
             print(f"  Plus lourd      : {lourd.nom} — {lourd.poids:.1f} kg")
             print(f"  Plus léger      : {leger.nom} — {leger.poids:.1f} kg")
 
-        ages_data = [(a, j) for j in joueurs if j.date_naissance for a in [_age(j.date_naissance)] if a]
+        ages_data = []
+        for j in joueurs:
+            if j.date_naissance:
+                a = _age(j.date_naissance)
+                if a is not None:
+                    ages_data.append((a, j))
         if ages_data:
             ages = [a for a, _ in ages_data]
-            jeune = min(ages_data, key=lambda x: x[0])
-            vieux = max(ages_data, key=lambda x: x[0])
-            print(f"\n  Âge moyen       : {sum(ages)/len(ages):.1f} ans")
-            print(f"  Plus jeune      : {jeune[1].nom} — {jeune[0]} ans")
-            print(f"  Plus vieux      : {vieux[1].nom} — {vieux[0]} ans")
-            tranches = {"< 20 ans": 0, "20-25 ans": 0, "26-30 ans": 0, "31-35 ans": 0, "> 35 ans": 0}
-            for a, _ in ages_data:
-                if a < 20:        tranches["< 20 ans"] += 1
-                elif a <= 25:     tranches["20-25 ans"] += 1
-                elif a <= 30:     tranches["26-30 ans"] += 1
-                elif a <= 35:     tranches["31-35 ans"] += 1
-                else:             tranches["> 35 ans"] += 1
-            print(f"\n  Distribution par tranche d'âge :")
-            for tranche, nb in tranches.items():
-                print(f"    {tranche:<12} : {nb} joueurs")
+            jeune = ages_data[0]
+            vieux = ages_data[0]
+            for item in ages_data[1:]:
+                if item[0] < jeune[0]:
+                    jeune = item
+                if item[0] > vieux[0]:
+                    vieux = item
+            print(f"\n  Âge moyen  : {sum(ages)/len(ages):.1f} ans")
+            print(f"  Plus jeune : {jeune[1].nom} — {jeune[0]} ans")
+            print(f"  Plus vieux : {vieux[1].nom} — {vieux[0]} ans")
 
 
 JoueurLoader.register("football", FootballJoueurLoader)
@@ -231,9 +271,9 @@ class LoLJoueurLoader:
 
     def afficher_stats(self, joueurs: list) -> None:
         print(f"\n=== Statistiques des joueurs — League of Legends ({len(joueurs)}) ===\n")
-        roles: dict[str, int] = {}
-        equipes: dict[str, int] = {}
-        pays: dict[str, int] = {}
+        roles = {}
+        equipes = {}
+        pays = {}
         for j in joueurs:
             if j.position: roles[j.position]   = roles.get(j.position, 0) + 1
             if j.equipe:   equipes[j.equipe]    = equipes.get(j.equipe, 0) + 1
@@ -241,22 +281,32 @@ class LoLJoueurLoader:
 
         if roles:
             print("  Répartition par rôle :")
-            for role, nb in sorted(roles.items(), key=lambda x: -x[1]):
+            for role, nb in sorted(roles.items(), key=lambda x: x[1], reverse=True):
                 print(f"    {role:<12} : {nb}")
         if equipes:
             print(f"\n  Répartition par équipe :")
-            for eq, nb in sorted(equipes.items(), key=lambda x: -x[1]):
+            for eq, nb in sorted(equipes.items(), key=lambda x: x[1], reverse=True):
                 print(f"    {eq:<25} : {nb}")
         if pays:
-            top = sorted(pays.items(), key=lambda x: -x[1])[:10]
+            top = sorted(pays.items(), key=lambda x: x[1], reverse=True)[:10]
             print(f"\n  Top nationalités :")
             for p, nb in top:
                 print(f"    {p:<25} : {nb}")
-        ages_data = [(a, j) for j in joueurs if j.date_naissance for a in [_age(j.date_naissance)] if a]
+        ages_data = []
+        for j in joueurs:
+            if j.date_naissance:
+                a = _age(j.date_naissance)
+                if a is not None:
+                    ages_data.append((a, j))
         if ages_data:
             ages = [a for a, _ in ages_data]
-            jeune = min(ages_data, key=lambda x: x[0])
-            vieux = max(ages_data, key=lambda x: x[0])
+            jeune = ages_data[0]
+            vieux = ages_data[0]
+            for item in ages_data[1:]:
+                if item[0] < jeune[0]:
+                    jeune = item
+                if item[0] > vieux[0]:
+                    vieux = item
             print(f"\n  Âge moyen  : {sum(ages)/len(ages):.1f} ans")
             print(f"  Plus jeune : {jeune[1].pseudo or jeune[1].nom} — {jeune[0]} ans")
             print(f"  Plus vieux : {vieux[1].pseudo or vieux[1].nom} — {vieux[0]} ans")
@@ -308,13 +358,18 @@ class TennisJoueurLoader:
 
         tailles_a = [j.taille for j in atp if j.taille]
         tailles_w = [j.taille for j in wta if j.taille]
-        ages_a = [a for a in (_age(j.date_naissance) for j in atp if j.date_naissance) if a]
-        ages_w = [a for a in (_age(j.date_naissance) for j in wta if j.date_naissance) if a]
-
-        def _pct(groupe, main):
-            total = sum(1 for j in groupe if j.main)
-            nb = sum(1 for j in groupe if j.main == main)
-            return f"{nb/total*100:.0f}%" if total else "—"
+        ages_a = []
+        for j in atp:
+            if j.date_naissance:
+                a = _age(j.date_naissance)
+                if a is not None:
+                    ages_a.append(a)
+        ages_w = []
+        for j in wta:
+            if j.date_naissance:
+                a = _age(j.date_naissance)
+                if a is not None:
+                    ages_w.append(a)
 
         if tailles_a and tailles_w:
             print(f"  {'':22} {'ATP':>10}  {'WTA':>10}")
@@ -322,28 +377,31 @@ class TennisJoueurLoader:
             print(f"  {'Taille moyenne':<22} {sum(tailles_a)/len(tailles_a):>9.1f}  {sum(tailles_w)/len(tailles_w):>9.1f} cm")
             if ages_a and ages_w:
                 print(f"  {'Âge moyen':<22} {sum(ages_a)/len(ages_a):>9.1f}  {sum(ages_w)/len(ages_w):>9.1f} ans")
-            print(f"  {'Droitiers/ères':<22} {_pct(atp, 'R'):>10}  {_pct(wta, 'R'):>10}")
-            print(f"  {'Gauchers/ères':<22} {_pct(atp, 'L'):>10}  {_pct(wta, 'L'):>10}")
+            print(f"  {'Droitiers/ères':<22} {_pct_main(atp, 'R'):>10}  {_pct_main(wta, 'R'):>10}")
+            print(f"  {'Gauchers/ères':<22} {_pct_main(atp, 'L'):>10}  {_pct_main(wta, 'L'):>10}")
 
         for groupe, label in [(atp, "ATP — Hommes"), (wta, "WTA — Femmes")]:
             if not groupe:
                 continue
             tailles = [j.taille for j in groupe if j.taille]
-            mains: dict[str, int] = {}
-            pays: dict[str, int] = {}
+            mains = {}
+            pays = {}
             for j in groupe:
                 if j.main: mains[j.main] = mains.get(j.main, 0) + 1
                 if j.pays: pays[j.pays]  = pays.get(j.pays, 0) + 1
             print(f"\n  ── {label} ({len(groupe)} joueurs) ──")
             if tailles:
-                grand = max(groupe, key=lambda j: j.taille or 0)
+                grand = None
+                for j in groupe:
+                    if j.taille is not None and (grand is None or j.taille > grand.taille):
+                        grand = j
                 print(f"  Taille moy. : {sum(tailles)/len(tailles):.1f} cm  |  Plus grand(e) : {grand.prenom or ''} {grand.nom} ({grand.taille:.0f} cm)")
             if mains:
                 total = sum(mains.values())
-                parts = [f"{_MAIN_LABELS.get(m, m)} {n} ({n/total*100:.0f}%)" for m, n in sorted(mains.items(), key=lambda x: -x[1])]
+                parts = [f"{_MAIN_LABELS.get(m, m)} {n} ({n/total*100:.0f}%)" for m, n in sorted(mains.items(), key=lambda x: x[1], reverse=True)]
                 print(f"  Main        : " + "  |  ".join(parts))
             if pays:
-                top = sorted(pays.items(), key=lambda x: -x[1])[:8]
+                top = sorted(pays.items(), key=lambda x: x[1], reverse=True)[:8]
                 print(f"  Top 8 pays  : " + "  |  ".join(f"{p} ({n})" for p, n in top))
 
 
@@ -362,7 +420,9 @@ class VolleyJoueurLoader:
         df_men   = pd.read_csv(self.DATA_MEN)
         df_women = pd.read_csv(self.DATA_WOMEN)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
-        countries = dict(zip(df_countries["code"], df_countries["country"]))
+        countries = {}
+        for _, row in df_countries.iterrows():
+            countries[row["code"]] = row["country"]
         df_men["genre"]   = "Hommes"
         df_women["genre"] = "Femmes"
         df = pd.concat([df_men, df_women], ignore_index=True)
@@ -386,37 +446,43 @@ class VolleyJoueurLoader:
         print(f"\n=== Statistiques volleyball — {len(joueurs)} joueurs au total ===")
         print(f"  Hommes : {len(hommes)}  |  Femmes : {len(femmes)}\n")
 
-        tailles_h = [j.taille for j in hommes if j.taille]
-        tailles_f = [j.taille for j in femmes if j.taille]
-        if tailles_h and tailles_f:
-            ages_h = [a for a in (_age(j.date_naissance) for j in hommes if j.date_naissance) if a]
-            ages_f = [a for a in (_age(j.date_naissance) for j in femmes if j.date_naissance) if a]
-            print(f"  {'':20} {'Hommes':>10}  {'Femmes':>10}")
-            print("  " + "─" * 44)
-            print(f"  {'Taille moyenne':<20} {sum(tailles_h)/len(tailles_h):>9.1f}  {sum(tailles_f)/len(tailles_f):>9.1f} cm")
-            if ages_h and ages_f:
-                print(f"  {'Âge moyen':<20} {sum(ages_h)/len(ages_h):>9.1f}  {sum(ages_f)/len(ages_f):>9.1f} ans")
-
         for groupe, label in [(hommes, "Hommes"), (femmes, "Femmes")]:
             if not groupe:
                 continue
             tailles = [j.taille for j in groupe if j.taille]
-            ages_data = [(a, j) for j in groupe if j.date_naissance for a in [_age(j.date_naissance)] if a]
-            pays: dict[str, int] = {}
+            ages_data = []
+            for j in groupe:
+                if j.date_naissance:
+                    a = _age(j.date_naissance)
+                    if a is not None:
+                        ages_data.append((a, j))
+            pays = {}
             for j in groupe:
                 if j.pays: pays[j.pays] = pays.get(j.pays, 0) + 1
             print(f"\n  ── {label} ({len(groupe)}) ──")
             if tailles:
-                grand = max(groupe, key=lambda j: j.taille or 0)
-                petit = min(groupe, key=lambda j: j.taille or float("inf"))
+                grand = None
+                petit = None
+                for j in groupe:
+                    if j.taille is None:
+                        continue
+                    if grand is None or j.taille > grand.taille:
+                        grand = j
+                    if petit is None or j.taille < petit.taille:
+                        petit = j
                 print(f"  Taille : moy {sum(tailles)/len(tailles):.1f} cm  |  max {grand.taille:.0f} cm ({grand.nom})  |  min {petit.taille:.0f} cm ({petit.nom})")
             if ages_data:
                 ages = [a for a, _ in ages_data]
-                jeune = min(ages_data, key=lambda x: x[0])
-                vieux = max(ages_data, key=lambda x: x[0])
+                jeune = ages_data[0]
+                vieux = ages_data[0]
+                for item in ages_data[1:]:
+                    if item[0] < jeune[0]:
+                        jeune = item
+                    if item[0] > vieux[0]:
+                        vieux = item
                 print(f"  Âge   : moy {sum(ages)/len(ages):.1f} ans  |  min {jeune[0]} ({jeune[1].nom})  |  max {vieux[0]} ({vieux[1].nom})")
             if pays:
-                top = sorted(pays.items(), key=lambda x: -x[1])[:5]
+                top = sorted(pays.items(), key=lambda x: x[1], reverse=True)[:5]
                 print(f"  Pays  : " + "  |  ".join(f"{p} ({n})" for p, n in top))
 
 

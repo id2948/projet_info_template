@@ -1,7 +1,3 @@
-from src.Common.utils import print_timings
-
-
-@print_timings
 def parse_csv(filepath: str, sep: str = ";") -> list:
     """Parse un fichier CSV et retourne une liste de dictionnaires.
 
@@ -22,5 +18,8 @@ def parse_csv(filepath: str, sep: str = ";") -> list:
         headers = f.readline().strip().split(sep)
         for line in f:
             values = line.strip().split(sep)
-            rows.append(dict(zip(headers, values)))
+            row = {}
+            for i, header in enumerate(headers):
+                row[header] = values[i]
+            rows.append(row)
     return rows

@@ -1,4 +1,3 @@
-from typing import Optional
 from src.sport import Sport
 
 
@@ -15,7 +14,7 @@ class Equipe:
         Abréviation de l'équipe.
     """
 
-    def __init__(self, nom: str, sport: str, abreviation: Optional[str] = None):
+    def __init__(self, nom: str, sport: str, abreviation: str | None = None):
         self.nom         = nom
         self.sport       = sport
         self.abreviation = abreviation

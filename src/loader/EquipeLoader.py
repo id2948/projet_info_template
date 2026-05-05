@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pandas as pd
 
 from src.sport import Sport
@@ -15,9 +13,9 @@ class EquipeLoader:
 
     _loaders = {}
 
-    @classmethod
-    def register(cls, sport_nom: str, loader) -> None:
-        cls._loaders[sport_nom] = loader
+    @staticmethod
+    def register(sport_nom: str, loader) -> None:
+        EquipeLoader._loaders[sport_nom] = loader
 
     def run(self, sport: Sport) -> None:
         """Lance le menu de stats d'équipe pour le sport sélectionné.
@@ -44,7 +42,9 @@ class FootballEquipeLoader:
     def run(self) -> None:
         df_match = pd.read_csv(self.DATA_MATCHES)
         df_team  = pd.read_csv(self.DATA_TEAMS)
-        teams    = dict(zip(df_team["team_api_id"], df_team["team_long_name"]))
+        teams = {}
+        for _, row in df_team.iterrows():
+            teams[row["team_api_id"]] = row["team_long_name"]
 
         nom = input("  Nom de l'équipe : ").strip()
         matches = {tid: tname for tid, tname in teams.items() if nom.lower() in tname.lower()}
@@ -79,8 +79,8 @@ class FootballEquipeLoader:
             else:
                 e.ajouter_match(int(row["away_team_goal"]), int(row["home_team_goal"]))
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_equipe(e, e.nom)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_equipe(e, e.nom)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
@@ -105,7 +105,9 @@ class BasketballEquipeLoader:
     def run(self) -> None:
         df_game = pd.read_csv(self.DATA_GAMES)
         df_team = pd.read_csv(self.DATA_TEAMS)
-        teams   = dict(zip(df_team["id"], df_team["full_name"]))
+        teams = {}
+        for _, row in df_team.iterrows():
+            teams[row["id"]] = row["full_name"]
 
         print("\n  Type de saison :", ", ".join(df_game["season_type"].unique()))
         season_type = input("  Type de saison : ").strip()
@@ -130,8 +132,8 @@ class BasketballEquipeLoader:
                 e.rebonds += float(row["reb_away"] or 0); e.passes += float(row["ast_away"] or 0)
                 e.interceptions += float(row["stl_away"] or 0); e.contres += float(row["blk_away"] or 0)
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_equipe(e, e.nom, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
@@ -183,8 +185,8 @@ class LoLEquipeLoader:
                     else:
                         e.defaites  += 1
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_equipe(e, e.nom, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
@@ -213,8 +215,13 @@ class TennisEquipeLoader:
         df_wta_p = pd.read_csv(self.DATA_WTA_PLAYERS)
         df_atp_m = pd.read_csv(self.DATA_ATP_MATCHES)
         df_wta_m = pd.read_csv(self.DATA_WTA_MATCHES)
-        atp_players = dict(zip(df_atp_p["player_id"].astype(str), df_atp_p["name_first"] + " " + df_atp_p["name_last"]))
-        wta_players = dict(zip(df_wta_p["player_id"].astype(str), df_wta_p["name_first"] + " " + df_wta_p["name_last"]))
+        atp_players = {}
+        for _, row in df_atp_p.iterrows():
+            atp_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
+
+        wta_players = {}
+        for _, row in df_wta_p.iterrows():
+            wta_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
 
         circuit = input("\n  Circuit (ATP / WTA) : ").strip().upper()
         if circuit == "ATP":
@@ -225,7 +232,11 @@ class TennisEquipeLoader:
             print("  Circuit invalide."); return
 
         nom = input("  Nom du joueur : ").strip()
-        pid = next((pid for pid, pname in players.items() if nom.lower() in pname.lower()), None)
+        pid = None
+        for p_id, p_nom in players.items():
+            if nom.lower() in p_nom.lower():
+                pid = p_id
+                break
         if not pid:
             print("  Joueur non trouvé."); return
 
@@ -238,8 +249,8 @@ class TennisEquipeLoader:
             elif lid == pid:
                 e.ajouter_match(0, 1, nul_possible=False)
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_equipe(e, e.nom, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
@@ -262,7 +273,9 @@ class VolleyEquipeLoader:
         df_men   = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
-        countries = dict(zip(df_countries["code"], df_countries["country"]))
+        countries = {}
+        for _, row in df_countries.iterrows():
+            countries[row["code"]] = row["country"]
         df_men["code_1"]   = df_men["country_code_1"]
         df_men["code_2"]   = df_men["country_code_2"]
         df_women["code_1"] = df_women["country_1"]
@@ -273,7 +286,11 @@ class VolleyEquipeLoader:
         genre = "Hommes" if cat in ["hommes", "h", "men"] else "Femmes"
 
         nom = input("  Nom du pays : ").strip()
-        code = next((c for c, pays in countries.items() if nom.lower() in pays.lower()), None)
+        code = None
+        for c, pays in countries.items():
+            if nom.lower() in pays.lower():
+                code = c
+                break
         if not code:
             print("  Pays non trouvé."); return
 
@@ -286,8 +303,8 @@ class VolleyEquipeLoader:
             elif c2 == code:
                 e.ajouter_match(s2, s1, nul_possible=False)
 
-        from src.loader.ResultatManager import ResultatManager
-        nb = ResultatManager.appliquer_a_equipe(e, e.nom, nul_possible=False)
+        from src.loader.GestionResultats import GestionResultats
+        nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 

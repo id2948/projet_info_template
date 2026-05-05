@@ -12,9 +12,9 @@ class MatchLoader:
 
     _loaders = {}
 
-    @classmethod
-    def register(cls, sport_nom: str, loader) -> None:
-        cls._loaders[sport_nom] = loader
+    @staticmethod
+    def register(sport_nom: str, loader) -> None:
+        MatchLoader._loaders[sport_nom] = loader
 
     def load_all_matches(self, sport: Sport) -> list[Match]:
         """Charge tous les matchs du sport, y compris les nouveaux résultats.
@@ -29,12 +29,12 @@ class MatchLoader:
         list[Match]
             Matchs historiques + nouveaux résultats enregistrés.
         """
-        loader = self._loaders.get(sport.nom)
+        loader = MatchLoader._loaders.get(sport.nom)
         if loader is None:
             raise Exception(f"Aucun loader enregistré pour {sport.nom}")
         matchs = loader().load_all_matches()
-        from src.loader.ResultatManager import ResultatManager
-        return matchs + ResultatManager.charger(sport.nom)
+        from src.loader.GestionResultats import GestionResultats
+        return matchs + GestionResultats.charger(sport.nom)
 
 
 # ── Basketball ────────────────────────────────────────────────────────────────
@@ -47,7 +47,9 @@ class BasketballMatchLoader:
     def load_all_matches(self) -> list[Match]:
         df_games = pd.read_csv(self.DATA_GAMES)
         df_teams = pd.read_csv(self.DATA_TEAMS)
-        teams = dict(zip(df_teams["id"].astype(str), df_teams["full_name"]))
+        teams = {}
+        for _, row in df_teams.iterrows():
+            teams[str(row["id"])] = row["full_name"]
         df = pd.DataFrame({
             "date":        df_games["game_date"],
             "equipe_1":    df_games["team_id_home"].astype(str).map(teams).fillna(df_games["team_id_home"].astype(str)),
@@ -74,7 +76,9 @@ class FootballMatchLoader:
     def load_all_matches(self) -> list[Match]:
         df_matches = pd.read_csv(self.DATA_MATCHES)
         df_teams   = pd.read_csv(self.DATA_TEAMS)
-        teams = dict(zip(df_teams["team_api_id"].astype(str), df_teams["team_long_name"]))
+        teams = {}
+        for _, row in df_teams.iterrows():
+            teams[str(row["team_api_id"])] = row["team_long_name"]
         df = pd.DataFrame({
             "date":      df_matches["date"],
             "equipe_1":  df_matches["home_team_api_id"].astype(str).map(teams).fillna(df_matches["home_team_api_id"].astype(str)),
@@ -131,23 +135,39 @@ class TennisMatchLoader:
         df_atp_p = pd.read_csv(self.DATA_ATP_PLAYERS)
         df_wta_p = pd.read_csv(self.DATA_WTA_PLAYERS)
 
-        atp_players = dict(zip(df_atp_p["player_id"].astype(str), df_atp_p["name_first"] + " " + df_atp_p["name_last"]))
-        wta_players = dict(zip(df_wta_p["player_id"].astype(str), df_wta_p["name_first"] + " " + df_wta_p["name_last"]))
+        atp_players = {}
+        for _, row in df_atp_p.iterrows():
+            atp_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
 
-        def _process(df, players):
-            return pd.DataFrame({
-                "date":         df["tourney_date"].astype(str),
-                "equipe_1":     df["winner_id"].astype(str).map(players).fillna(df["winner_id"].astype(str)),
-                "equipe_2":     df["loser_id"].astype(str).map(players).fillna(df["loser_id"].astype(str)),
-                "score_1":      1.0,
-                "score_2":      0.0,
-                "sport":        "tennis",
-                "tourney_name": df["tourney_name"],
-                "surface":      df["surface"],
-                "round":        df["round"],
-            })
+        wta_players = {}
+        for _, row in df_wta_p.iterrows():
+            wta_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
 
-        df_all = pd.concat([_process(df_atp_m, atp_players), _process(df_wta_m, wta_players)], ignore_index=True)
+        df_atp = pd.DataFrame({
+            "date":         df_atp_m["tourney_date"].astype(str),
+            "equipe_1":     df_atp_m["winner_id"].astype(str).map(atp_players).fillna(df_atp_m["winner_id"].astype(str)),
+            "equipe_2":     df_atp_m["loser_id"].astype(str).map(atp_players).fillna(df_atp_m["loser_id"].astype(str)),
+            "score_1":      1.0,
+            "score_2":      0.0,
+            "sport":        "tennis",
+            "tourney_name": df_atp_m["tourney_name"],
+            "surface":      df_atp_m["surface"],
+            "round":        df_atp_m["round"],
+        })
+
+        df_wta = pd.DataFrame({
+            "date":         df_wta_m["tourney_date"].astype(str),
+            "equipe_1":     df_wta_m["winner_id"].astype(str).map(wta_players).fillna(df_wta_m["winner_id"].astype(str)),
+            "equipe_2":     df_wta_m["loser_id"].astype(str).map(wta_players).fillna(df_wta_m["loser_id"].astype(str)),
+            "score_1":      1.0,
+            "score_2":      0.0,
+            "sport":        "tennis",
+            "tourney_name": df_wta_m["tourney_name"],
+            "surface":      df_wta_m["surface"],
+            "round":        df_wta_m["round"],
+        })
+
+        df_all = pd.concat([df_atp, df_wta], ignore_index=True)
         return [Match(**r) for r in df_all.to_dict("records")]
 
 
@@ -166,7 +186,9 @@ class VolleyMatchLoader:
         df_men   = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)
-        countries = dict(zip(df_countries["code"], df_countries["country"]))
+        countries = {}
+        for _, row in df_countries.iterrows():
+            countries[row["code"]] = row["country"]
         df_men   = df_men.rename(columns={"country_code_1": "code_1", "country_code_2": "code_2"})
         df_women = df_women.rename(columns={"country_1": "code_1", "country_2": "code_2"})
         df = pd.concat([df_men, df_women], ignore_index=True)

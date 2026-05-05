@@ -50,15 +50,15 @@ def test_classement_par_points():
     assert cl[2].nom == "Team C"
 
 
-def test_classement_par_critere_secondaire():
-    c = Competition("Test", "football")
-    e1 = _equipe("Team A", victoires=1)  # 3 pts, diff +1
-    e2 = _equipe("Team B", victoires=1)  # 3 pts, diff +1
-    e1.score_pour += 2                   # diff +3 au total
-    c.ajouter_equipe("a", e1)
-    c.ajouter_equipe("b", e2)
-    cl = c.classement_par("points", "difference_score")
-    assert cl[0].nom == "Team A"
+def test_classement_par_victoires():
+    c = Competition("Test", "basketball")
+    c.ajouter_equipe("a", _equipe("Team A", victoires=5))
+    c.ajouter_equipe("b", _equipe("Team B", victoires=2))
+    c.ajouter_equipe("c", _equipe("Team C", victoires=8))
+    cl = c.classement_par("victoires")
+    assert cl[0].nom == "Team C"
+    assert cl[1].nom == "Team A"
+    assert cl[2].nom == "Team B"
 
 
 def test_classement_liste_vide():

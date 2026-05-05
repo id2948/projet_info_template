@@ -1,5 +1,8 @@
 """Vérifie que tous les loaders sont correctement enregistrés pour les 5 sports."""
-import main  # déclenche l'enregistrement de tous les loaders
+import src.loader.MatchLoader
+import src.loader.JoueurLoader
+import src.loader.EquipeLoader
+import src.loader.CompetitionLoader
 
 from src.loader.MatchLoader import MatchLoader
 from src.loader.JoueurLoader import JoueurLoader
