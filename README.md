@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ## Utilisation
 
 ```bash
-python main.py
+python __main__.py
 ```
 
 L'application présente un menu interactif. L'utilisateur choisit d'abord un sport, puis une catégorie parmi les suivantes :
@@ -51,9 +51,9 @@ Les résultats ajoutés sont sauvegardés dans `data/resultats/nouveaux_matchs.c
 
 ```
 projet_info_template/
-├── main.py
+├── __main__.py              ← point d'entrée de l'application
+├── aide_csv.py              ← script utilitaire d'exploration des données
 ├── requirements.txt
-
 ├── pyproject.toml
 ├── data/
 │   ├── basketball/
@@ -61,13 +61,39 @@ projet_info_template/
 │   ├── LOL/
 │   ├── tennis/
 │   ├── volley/
-│   └── resultats/
+│   └── resultats/           ← nouveaux matchs enregistrés manuellement
 ├── src/
 │   ├── sport.py
 │   ├── Model/
+│   │   ├── Match.py
+│   │   ├── Joueur.py
+│   │   ├── Equipe.py
+│   │   └── Competition.py
 │   ├── loader/
-│   └── Common/
-└── test/
+│   │   ├── MatchLoader.py
+│   │   ├── JoueurLoader.py
+│   │   ├── EquipeLoader.py
+│   │   ├── CompetitionLoader.py
+│   │   └── GestionResultats.py
+│   ├── Common/
+│   │   └── utils.py
+│   └── Parsers/
+│       └── parse_csv.py
+├── test/
+│   ├── Common/
+│   │   └── test_utils.py
+│   ├── loader/
+│   │   ├── test_GestionResultats.py
+│   │   └── test_registries.py
+│   └── Model/
+│       ├── test_Competition.py
+│       ├── test_Equipe.py
+│       ├── test_Joueur.py
+│       ├── test_Match.py
+│       └── test_Sport.py
+└── uml/
+    ├── diagramme_classes.md
+    └── diagramme_classes.puml
 ```
 
 ## Tests
