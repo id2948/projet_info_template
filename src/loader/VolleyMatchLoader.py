@@ -11,6 +11,15 @@ class VolleyMatchLoader:
     DATA_COUNTRIES = "data/volley/country.csv"
 
     def load_all_matches(self) -> list[Match]:
+        """Charge et retourne tous les matchs de volleyball (hommes + femmes).
+
+        Résout les codes pays en noms complets.
+
+        Returns
+        -------
+        list[Match]
+            Liste des matchs avec noms de pays, sets et phase.
+        """
         df_men = pd.read_csv(self.DATA_MEN_MATCHES)
         df_women = pd.read_csv(self.DATA_WOMEN_MATCHES)
         df_countries = pd.read_csv(self.DATA_COUNTRIES)

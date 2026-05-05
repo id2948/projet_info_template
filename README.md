@@ -1,40 +1,117 @@
-# Projet 1A 2025
+# Projet Info 1A 2025 — Gestion de compétitions sportives
 
-## Goal
+## Objectif
 
-This student project aims to determine who is the greatest football player of all time via a thorough statistical analysis
+Application Python en ligne de commande permettant de gérer des compétitions sportives : consulter les résultats et statistiques des matchs, joueurs, équipes et classements ; enregistrer de nouveaux résultats qui mettent à jour automatiquement les statistiques.
 
-## Usage
+Sports supportés : basketball, football, League of Legends, tennis, volleyball.
 
-Install the necessary dependencies listed in `requirements.txt`
+## Version Python
 
-Run the CLI app with `python __main__.py`
-Or run the notebook `Projet1A.ipynb`
+Python **3.11** ou supérieur.
 
-## Test
+## Installation
 
-Depending on your installation, run one of these commands:
-`python -m pytest --cov`
-`conda run pytest --cov`
-`pytest --cov`
+Créer et activer un environnement virtuel :
 
-# Notes for students
+```bash
+python -m venv .venv
+source .venv/bin/activate        # Linux / macOS
+.venv\Scripts\activate           # Windows
+```
 
-Miscellaneous things of note and advice for your project
+Installer les dépendances :
 
-- The code and its documentation are in English! This will have you practice a bit, English is key in IT. You may code in English or French (Or another language if you're _really_ adventurous), but do not mix them: Choose one and stick with it throughout the project.
+```bash
+pip install -r requirements.txt
+```
 
-- There's an `__init__.py` in every folder. They can be used for more advanced stuff, but you'll notice in that case that they're all empty; they're mostly here to ensure the Python compiler recognizes the contents of the folder as a **package** and is able to import them
+## Lancer l'application
 
-- This project features the three "modes" of data analysis:
+```bash
+python main.py
+```
 
-  - The analysis with helpers libraries (here, `pandas`) with a Jupyter Notebook
-  - The analysis with helpers libraries with a CLI (`Command Line Interface`) app
-  - The analysis with 'homemade' tools with the same CLI app
-    - Only the third one is mandatory, you may choose between CLI and Notebook for the library-backed analysis based on your preference
+L'application propose un menu interactif. Choisissez un sport puis une catégorie :
 
-- Note the sparse use of classes/objects. They're useful to pass formatted data around the app, and for display purposes with the interface; you probably won't have to use them for more than this in the context of this project. They're even less required when using `pandas`; you'll mostly pass raw data around in the form of dataframes/series.
+| Catégorie   | Description |
+|-------------|-------------|
+| `match`     | Recherche et statistiques de matchs |
+| `joueur`    | Recherche et statistiques des joueurs |
+| `equipe`    | Statistiques d'une équipe |
+| `competition` | Classements de la compétition |
+| `ajouter`   | Enregistrer le résultat d'un nouveau match |
+| `historique` | Consulter les résultats enregistrés |
 
-- Pay attention to the structure of the project:
-  - The sub-packages rarely import each other. They're as much as possible standalone and independent. The `__main__.py` is where everything is tied together. This helps write maintainable and easily testable code.
-  - Methods that interact with the files (e.g. the readers for the `.csv` files) should never be unit-tested with real data (Think about the overhead in performance! Tests should be near-instantaneous). You'll notice test files with data that mimics the real data.
+Les résultats ajoutés via `ajouter` sont sauvegardés dans `data/resultats/nouveaux_matchs.csv` et pris en compte automatiquement dans toutes les statistiques et classements.
+
+## Structure du projet
+
+```
+projet_info_template/
+├── main.py                        ← point d'entrée
+├── requirements.txt               ← dépendances avec versions exactes
+├── pyproject.toml                 ← config linter, formatter et tests
+├── data/
+│   ├── basketball/ football/ LOL/ tennis/ volley/   ← données CSV
+│   └── resultats/nouveaux_matchs.csv                ← résultats ajoutés
+├── src/
+│   ├── sport.py
+│   ├── Model/       ← Match, Joueur, Equipe, Competition
+│   ├── loader/      ← chargement CSV et gestion des résultats
+│   └── Common/      ← utilitaires
+└── test/            ← tests pytest
+```
+
+## Tests
+
+Lancer les tests :
+
+```bash
+pytest
+```
+
+Lancer les tests avec la couverture :
+
+```bash
+pytest --cov=src --cov-report=term-missing
+```
+
+## Linter
+
+Linter utilisé : **Flake8**
+
+```bash
+flake8 src/
+```
+
+## Formatter
+
+Formatter utilisé : **Black**
+
+```bash
+black src/
+```
+
+## Style de documentation
+
+Les docstrings suivent le style **NumPy**.
+
+## Dépendances
+
+| Paquet | Version | Usage |
+|--------|---------|-------|
+| pandas | 2.3.3 | Chargement des CSV |
+| pytest | 9.0.3 | Tests unitaires |
+| pytest-cov | 7.1.0 | Couverture des tests |
+| black | 25.1.0 | Formatage du code |
+
+## Sports supportés
+
+| Sport | Matchs | Joueurs | Équipes | Compétition | Ajout résultats |
+|-------|--------|---------|---------|-------------|-----------------|
+| Basketball | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Football | ✅ | ✅ | ✅ | ✅ | ✅ |
+| LoL | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Tennis | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Volleyball | ✅ | ✅ | ✅ | ✅ | ✅ |

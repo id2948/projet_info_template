@@ -4,10 +4,21 @@ from src.loader.JoueurLoader import JoueurLoader
 
 
 class TennisJoueurLoader:
+    """Charge les joueurs de tennis ATP et WTA depuis les fichiers CSV 2024."""
+
     DATA_ATP = "data/tennis/atp_players_2024.csv"
     DATA_WTA = "data/tennis/wta_players_2024.csv"
 
     def load_all_joueurs(self) -> list[Joueur]:
+        """Charge et retourne tous les joueurs de tennis (ATP + WTA).
+
+        Normalise les dates de naissance au format AAAA-MM-JJ.
+
+        Returns
+        -------
+        list[Joueur]
+            Liste des joueurs ATP et WTA avec circuit, pays, taille et main.
+        """
         df_atp = pd.read_csv(self.DATA_ATP)
         df_wta = pd.read_csv(self.DATA_WTA)
         df_atp["circuit"] = "ATP"

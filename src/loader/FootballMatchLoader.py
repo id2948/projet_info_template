@@ -10,6 +10,15 @@ class FootballMatchLoader:
     DATA_TEAMS = "data/football/team.csv"
 
     def load_all_matches(self) -> list[Match]:
+        """Charge et retourne tous les matchs de football.
+
+        Résout les noms d'équipes à partir de leurs identifiants.
+
+        Returns
+        -------
+        list[Match]
+            Liste des matchs avec noms d'équipes, ligue et phase.
+        """
         df_matches = pd.read_csv(self.DATA_MATCHES)
         df_teams = pd.read_csv(self.DATA_TEAMS)
 

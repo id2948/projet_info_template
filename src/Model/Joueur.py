@@ -3,6 +3,33 @@ from src.sport import Sport
 
 
 class Joueur:
+    """Représente un joueur sportif, tous sports confondus.
+
+    Parameters
+    ----------
+    nom : str
+        Nom de famille ou nom complet du joueur.
+    sport : str
+        Nom du sport pratiqué.
+    prenom : str, optional
+        Prénom du joueur.
+    pseudo : str, optional
+        Pseudo en jeu, spécifique à l'e-sport.
+    equipe : str, optional
+        Nom de l'équipe ou du circuit (ex : "ATP").
+    position : str, optional
+        Poste ou rôle (ex : "Forward", "jungle").
+    date_naissance : str, optional
+        Date de naissance au format AAAA-MM-JJ.
+    taille : float, optional
+        Taille en centimètres.
+    poids : float, optional
+        Poids en kilogrammes.
+    pays : str, optional
+        Pays ou code pays du joueur.
+    main : str, optional
+        Main dominante, spécifique au tennis (ex : "R", "L").
+    """
 
     def __init__(
         self,
@@ -54,42 +81,77 @@ class Joueur:
 
     @staticmethod
     def run_menu(sport: Sport) -> None:
+        """Affiche le menu interactif des joueurs pour un sport donné.
+
+        Charge tous les joueurs une seule fois, puis boucle sur les requêtes
+        jusqu'à ce que l'utilisateur choisisse de revenir.
+
+        Parameters
+        ----------
+        sport : Sport
+            Sport sélectionné par l'utilisateur.
+        """
         from src.loader.JoueurLoader import JoueurLoader
-        loader = JoueurLoader()
-        joueurs = loader.load_all_joueurs(sport)
-        print(f"\n{len(joueurs)} joueurs chargés pour {sport.nom}\n")
+        joueurs = JoueurLoader().load_all_joueurs(sport)
+        print(f"  {len(joueurs)} joueurs chargés pour {sport.nom}.")
 
-        print("Que voulez-vous faire ?")
-        print("1 - Chercher un joueur par nom")
-        if sport.nom in ["basketball", "LOL"]:
-            print("2 - Chercher les joueurs d'une équipe")
-            print("3 - Chercher les joueurs par position")
-        elif sport.nom in ["tennis", "volley", "football"]:
-            print("2 - Chercher les joueurs par pays")
-        print("4 - Statistiques des joueurs")
-
-        choix = input("\nVotre choix : ").strip()
-
-        if choix == "1":
-            Joueur._chercher_par_nom(joueurs)
-        elif choix == "2":
-            if sport.nom in ["basketball", "LOL"]:
-                Joueur._chercher_par_equipe(joueurs)
+        while True:
+            print("\n  ── Joueurs ─────────────────────────────────────")
+            print("  1  Chercher un joueur par nom")
+            if sport.nom in ("basketball", "LOL"):
+                print("  2  Chercher les joueurs d'une équipe")
+                print("  3  Chercher les joueurs par position")
+            elif sport.nom == "volley":
+                print("  2  Chercher les joueurs par pays")
+                print("  3  Filtrer par genre  (Hommes / Femmes)")
+            elif sport.nom == "tennis":
+                print("  2  Chercher les joueurs par pays")
+                print("  3  Filtrer par circuit  (ATP / WTA)")
             else:
-                Joueur._chercher_par_pays(joueurs)
-        elif choix == "3":
-            if sport.nom in ["basketball", "LOL"]:
-                Joueur._chercher_par_position(joueurs)
+                print("  2  Chercher les joueurs par pays")
+            print("  4  Statistiques des joueurs")
+            print("  0  Retour")
+
+            choix = input("\n  Votre choix : ").strip()
+
+            if choix == "0" or choix.lower() in ("retour", "q"):
+                break
+            elif choix == "1":
+                Joueur._chercher_par_nom(joueurs)
+            elif choix == "2":
+                if sport.nom in ("basketball", "LOL"):
+                    Joueur._chercher_par_equipe(joueurs)
+                else:
+                    Joueur._chercher_par_pays(joueurs)
+            elif choix == "3":
+                if sport.nom in ("basketball", "LOL"):
+                    Joueur._chercher_par_position(joueurs)
+                elif sport.nom == "volley":
+                    genre = input("  Genre (Hommes / Femmes) : ").strip()
+                    resultats = [j for j in joueurs if j.equipe and genre.lower() in j.equipe.lower()]
+                    Joueur._afficher(resultats)
+                elif sport.nom == "tennis":
+                    circuit = input("  Circuit (ATP / WTA) : ").strip().upper()
+                    resultats = [j for j in joueurs if j.equipe == circuit]
+                    Joueur._afficher(resultats)
+                else:
+                    print("  Option non disponible pour ce sport.")
+            elif choix == "4":
+                from src.loader.JoueurStatsLoader import JoueurStatsLoader
+                JoueurStatsLoader().run(joueurs, sport)
             else:
-                print("Option non disponible pour ce sport.")
-        elif choix == "4":
-            Joueur._stats(joueurs, sport)
-        else:
-            print("Choix invalide.")
+                print("  Choix invalide.")
 
     @staticmethod
     def _chercher_par_nom(joueurs: list) -> None:
-        nom = input("Nom du joueur : ").strip()
+        """Filtre et affiche les joueurs dont le nom ou pseudo contient la saisie.
+
+        Parameters
+        ----------
+        joueurs : list
+            Liste de Joueur à filtrer.
+        """
+        nom = input("  Nom du joueur : ").strip()
         resultats = [j for j in joueurs if nom.lower() in j.nom.lower()
                      or (j.prenom and nom.lower() in j.prenom.lower())
                      or (j.pseudo and nom.lower() in j.pseudo.lower())]
@@ -97,68 +159,56 @@ class Joueur:
 
     @staticmethod
     def _chercher_par_equipe(joueurs: list) -> None:
-        equipe = input("Nom de l'équipe : ").strip()
+        """Filtre et affiche les joueurs appartenant à une équipe saisie.
+
+        Parameters
+        ----------
+        joueurs : list
+            Liste de Joueur à filtrer.
+        """
+        equipe = input("  Nom de l'équipe : ").strip()
         resultats = [j for j in joueurs if j.equipe and equipe.lower() in j.equipe.lower()]
         Joueur._afficher(resultats)
 
     @staticmethod
     def _chercher_par_position(joueurs: list) -> None:
-        position = input("Position (ex: Forward, Center, top, jungle...) : ").strip()
+        """Filtre et affiche les joueurs occupant une position saisie.
+
+        Parameters
+        ----------
+        joueurs : list
+            Liste de Joueur à filtrer.
+        """
+        position = input("  Position (ex: Forward, top, jungle...) : ").strip()
         resultats = [j for j in joueurs if j.position and position.lower() in j.position.lower()]
         Joueur._afficher(resultats)
 
     @staticmethod
     def _chercher_par_pays(joueurs: list) -> None:
-        pays = input("Pays : ").strip()
+        """Filtre et affiche les joueurs originaires d'un pays saisi.
+
+        Parameters
+        ----------
+        joueurs : list
+            Liste de Joueur à filtrer.
+        """
+        pays = input("  Pays : ").strip()
         resultats = [j for j in joueurs if j.pays and pays.lower() in j.pays.lower()]
         Joueur._afficher(resultats)
 
     @staticmethod
-    def _stats(joueurs: list, sport: Sport) -> None:
-        if not joueurs:
-            print("Aucun joueur disponible.")
-            return
-
-        print(f"\n=== Statistiques des joueurs — {sport.nom} ===\n")
-        print(f"  Nombre total de joueurs : {len(joueurs)}")
-
-        tailles = [j.taille for j in joueurs if j.taille is not None]
-        if tailles:
-            print(f"  Taille moyenne          : {sum(tailles) / len(tailles):.1f} cm")
-            plus_grand = max(joueurs, key=lambda j: j.taille if j.taille else 0)
-            plus_petit = min(joueurs, key=lambda j: j.taille if j.taille else float('inf'))
-            print(
-                f"Joueur le plus grand: {plus_grand.prenom or ''} {plus_grand.nom} ({plus_grand.taille} cm)")
-            print(
-                f"Joueur le plus petit: {plus_petit.prenom or ''} {plus_petit.nom} ({plus_petit.taille} cm)")
-
-        poids = [j.poids for j in joueurs if j.poids is not None]
-        if poids:
-            print(f"  Poids moyen             : {sum(poids) / len(poids):.1f} kg")
-
-        positions = [j.position for j in joueurs if j.position]
-        if positions:
-            compteur: dict[str, int] = {}
-            for p in positions:
-                compteur[p] = compteur.get(p, 0) + 1
-            print(f"\n  Répartition par position :")
-            for pos, nb in sorted(compteur.items(), key=lambda x: -x[1]):
-                print(f"    {pos:<15} : {nb} joueurs")
-
-        pays_list = [j.pays for j in joueurs if j.pays]
-        if pays_list:
-            compteur_pays: dict[str, int] = {}
-            for p in pays_list:
-                compteur_pays[p] = compteur_pays.get(p, 0) + 1
-            top_pays = sorted(compteur_pays.items(), key=lambda x: -x[1])[:5]
-            print(f"\n  Top 5 pays représentés :")
-            for pays, nb in top_pays:
-                print(f"    {pays:<20} : {nb} joueurs")
-
-    @staticmethod
     def _afficher(resultats: list, limite: int = 20) -> None:
-        print(f"\n{len(resultats)} résultat(s) trouvé(s) :\n")
+        """Affiche une liste de joueurs avec une limite optionnelle.
+
+        Parameters
+        ----------
+        resultats : list
+            Liste de Joueur à afficher.
+        limite : int, optional
+            Nombre maximum de résultats affichés (par défaut 20).
+        """
+        print(f"\n  {len(resultats)} résultat(s) :\n")
         for j in resultats[:limite]:
-            print(j)
+            print(f"  {j}")
         if len(resultats) > limite:
-            print(f"... ({len(resultats) - limite} résultats supplémentaires non affichés)")
+            print(f"  ... ({len(resultats) - limite} résultats supplémentaires non affichés)")

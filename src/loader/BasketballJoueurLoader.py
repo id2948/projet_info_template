@@ -4,10 +4,22 @@ from src.loader.JoueurLoader import JoueurLoader
 
 
 class BasketballJoueurLoader:
+    """Charge les joueurs NBA depuis les fichiers CSV de basketball."""
+
     DATA_PLAYERS = "data/basketball/player.csv"
     DATA_TEAMS = "data/basketball/team.csv"
 
     def load_all_joueurs(self) -> list[Joueur]:
+        """Charge et retourne tous les joueurs NBA.
+
+        Résout les noms d'équipes à partir de leurs identifiants et convertit
+        les tailles du format pieds-pouces en centimètres.
+
+        Returns
+        -------
+        list[Joueur]
+            Liste des joueurs NBA enrichie des noms d'équipes.
+        """
         df_players = pd.read_csv(self.DATA_PLAYERS)
         df_teams = pd.read_csv(self.DATA_TEAMS)
 
@@ -28,6 +40,18 @@ class BasketballJoueurLoader:
         return joueurs
 
     def _pieds_vers_cm(self, valeur: str) -> float | None:
+        """Convertit une taille au format pieds-pouces en centimètres.
+
+        Parameters
+        ----------
+        valeur : str
+            Taille au format "pieds-pouces" (ex : "6-8").
+
+        Returns
+        -------
+        float | None
+            Taille en centimètres, ou None si la conversion échoue.
+        """
         try:
             pieds, pouces = valeur.split("-")
             return round((int(pieds) * 12 + int(pouces)) * 2.54, 1)

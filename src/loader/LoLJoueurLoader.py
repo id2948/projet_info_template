@@ -4,9 +4,18 @@ from src.loader.JoueurLoader import JoueurLoader
 
 
 class LoLJoueurLoader:
+    """Charge les joueurs de League of Legends depuis le fichier CSV dédié."""
+
     DATA_PLAYERS = "data/LOL/player.csv"
 
     def load_all_joueurs(self) -> list[Joueur]:
+        """Charge et retourne tous les joueurs LoL.
+
+        Returns
+        -------
+        list[Joueur]
+            Liste des joueurs avec pseudo, équipe, rôle et pays.
+        """
         df = pd.read_csv(self.DATA_PLAYERS)
 
         joueurs = []

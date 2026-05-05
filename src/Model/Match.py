@@ -3,6 +3,43 @@ from src.sport import Sport
 
 
 class Match:
+    """Représente un match entre deux équipes, tous sports confondus.
+
+    Parameters
+    ----------
+    date : str
+        Date du match.
+    equipe_1 : str
+        Nom de la première équipe.
+    equipe_2 : str
+        Nom de la deuxième équipe.
+    score_1 : float
+        Score de la première équipe.
+    score_2 : float
+        Score de la deuxième équipe.
+    sport : str
+        Nom du sport concerné.
+    season : str, optional
+        Saison (ex : "2022-23").
+    season_type : str, optional
+        Type de saison (ex : "Regular Season", "Playoffs").
+    league_id : float, optional
+        Identifiant de la ligue.
+    stage : str, optional
+        Phase de compétition.
+    patch : str, optional
+        Version du patch, spécifique à LoL.
+    week : int, optional
+        Numéro de semaine, spécifique à LoL.
+    winner : str, optional
+        Nom de l'équipe gagnante.
+    tourney_name : str, optional
+        Nom du tournoi, spécifique au tennis.
+    surface : str, optional
+        Surface de jeu, spécifique au tennis.
+    round : str, optional
+        Tour du tournoi, spécifique au tennis.
+    """
 
     def __init__(
         self,
@@ -46,44 +83,71 @@ class Match:
 
     @staticmethod
     def run_menu(sport: Sport) -> None:
+        """Affiche le menu interactif des matchs pour un sport donné.
+
+        Charge tous les matchs une seule fois, puis boucle sur les requêtes
+        jusqu'à ce que l'utilisateur choisisse de revenir.
+
+        Parameters
+        ----------
+        sport : Sport
+            Sport sélectionné par l'utilisateur.
+        """
         from src.loader.MatchLoader import MatchLoader
-        loader = MatchLoader()
-        matchs = loader.load_all_matches(sport)
-        print(f"\n{len(matchs)} matchs chargés pour {sport.nom}\n")
+        matchs = MatchLoader().load_all_matches(sport)
+        print(f"  {len(matchs)} matchs chargés pour {sport.nom}.")
 
-        print("Que voulez-vous faire ?")
-        print("1 - Chercher les matchs d'une équipe")
-        print("2 - Chercher les matchs entre deux équipes")
-        print("3 - Chercher les matchs à une date précise")
-        print("4 - Chercher les matchs où le score dépasse un seuil")
-        print("5 - Statistiques agrégées")
+        while True:
+            print("\n  ── Matchs ──────────────────────────────────────")
+            print("  1  Chercher les matchs d'une équipe")
+            print("  2  Chercher les matchs entre deux équipes")
+            print("  3  Chercher les matchs à une date précise")
+            print("  4  Chercher les matchs où le score dépasse un seuil")
+            print("  5  Statistiques agrégées")
+            print("  0  Retour")
 
-        choix = input("\nVotre choix : ").strip()
+            choix = input("\n  Votre choix : ").strip()
 
-        if choix == "1":
-            Match._matchs_equipe(matchs)
-        elif choix == "2":
-            Match._matchs_entre_deux_equipes(matchs)
-        elif choix == "3":
-            Match._matchs_par_date(matchs)
-        elif choix == "4":
-            Match._matchs_par_score(matchs)
-        elif choix == "5":
-            Match._stats_agregeees(matchs, sport)
-        else:
-            print("Choix invalide.")
+            if choix == "0" or choix.lower() in ("retour", "q"):
+                break
+            elif choix == "1":
+                Match._matchs_equipe(matchs)
+            elif choix == "2":
+                Match._matchs_entre_deux_equipes(matchs)
+            elif choix == "3":
+                Match._matchs_par_date(matchs)
+            elif choix == "4":
+                Match._matchs_par_score(matchs)
+            elif choix == "5":
+                Match._stats_agregeees(matchs, sport)
+            else:
+                print("  Choix invalide.")
 
     @staticmethod
     def _matchs_equipe(matchs: list) -> None:
-        equipe = input("Nom de l'équipe : ").strip()
+        """Filtre et affiche les matchs d'une équipe saisie par l'utilisateur.
+
+        Parameters
+        ----------
+        matchs : list
+            Liste de Match à filtrer.
+        """
+        equipe = input("  Nom de l'équipe : ").strip()
         resultats = [m for m in matchs if equipe.lower() in m.equipe_1.lower()
                      or equipe.lower() in m.equipe_2.lower()]
         Match._afficher(resultats)
 
     @staticmethod
     def _matchs_entre_deux_equipes(matchs: list) -> None:
-        equipe1 = input("Équipe 1 : ").strip()
-        equipe2 = input("Équipe 2 : ").strip()
+        """Filtre et affiche les confrontations directes entre deux équipes.
+
+        Parameters
+        ----------
+        matchs : list
+            Liste de Match à filtrer.
+        """
+        equipe1 = input("  Équipe 1 : ").strip()
+        equipe2 = input("  Équipe 2 : ").strip()
         resultats = [m for m in matchs if
                      (equipe1.lower() in m.equipe_1.lower() and
                       equipe2.lower() in m.equipe_2.lower()) or
@@ -93,32 +157,58 @@ class Match:
 
     @staticmethod
     def _matchs_par_date(matchs: list) -> None:
-        date = input("Date (ex: 2022-10-18) : ").strip()
+        """Filtre et affiche les matchs correspondant à une date saisie.
+
+        Parameters
+        ----------
+        matchs : list
+            Liste de Match à filtrer.
+        """
+        date = input("  Date (ex: 2022-10-18) : ").strip()
         resultats = [m for m in matchs if date in str(m.date)]
         Match._afficher(resultats)
 
     @staticmethod
     def _matchs_par_score(matchs: list) -> None:
+        """Filtre et affiche les matchs dont au moins un score dépasse un seuil.
+
+        Parameters
+        ----------
+        matchs : list
+            Liste de Match à filtrer.
+        """
         try:
-            seuil = float(input("Score minimum : ").strip())
+            seuil = float(input("  Score minimum : ").strip())
         except ValueError:
-            print("Score invalide.")
+            print("  Score invalide.")
             return
         resultats = [m for m in matchs if m.score_1 >= seuil or m.score_2 >= seuil]
         Match._afficher(resultats)
 
     @staticmethod
     def _stats_agregeees(matchs: list, sport: Sport) -> None:
+        """Calcule et affiche des statistiques agrégées sur les matchs.
+
+        Propose un filtre optionnel par équipe, puis affiche le nombre de matchs,
+        le match le plus prolifique et le bilan victoires/défaites/nuls.
+
+        Parameters
+        ----------
+        matchs : list
+            Liste de Match à analyser.
+        sport : Sport
+            Sport concerné, utilisé pour le titre d'affichage.
+        """
         if not matchs:
-            print("Aucun match disponible.")
+            print("  Aucun match disponible.")
             return
 
-        equipe_filtre = input("Filtrer sur une équipe ? (laissez vide pour tout) : ").strip()
+        equipe_filtre = input("  Filtrer sur une équipe ? (laisser vide = tous) : ").strip()
         if equipe_filtre:
             matchs_filtres = [m for m in matchs if equipe_filtre.lower() in m.equipe_1.lower()
                               or equipe_filtre.lower() in m.equipe_2.lower()]
             if not matchs_filtres:
-                print(f"Aucun match trouvé pour '{equipe_filtre}'.")
+                print(f"  Aucun match trouvé pour « {equipe_filtre} ».")
                 return
             titre = f"{sport.nom} — {equipe_filtre}"
         else:
@@ -128,28 +218,21 @@ class Match:
 
         match_record = max(matchs_filtres, key=lambda m: (m.score_1 or 0) + (m.score_2 or 0))
 
-        print(f"\n=== Statistiques des matchs — {titre} ===\n")
+        print(f"\n  === Statistiques des matchs — {titre} ===\n")
         print(f"  Nombre total de matchs   : {len(matchs_filtres)}")
         print(f"  Match le plus prolifique : {match_record}")
 
         if equipe_filtre:
-            victoires = 0
-            defaites = 0
-            nuls = 0
-            points_marques = []
-            points_encaisses = []
+            victoires = defaites = nuls = 0
+            points_marques: list[float] = []
+            points_encaisses: list[float] = []
+            serie_actuelle = serie_max = 0
 
-            matchs_tries = sorted(matchs_filtres, key=lambda m: str(m.date))
-            serie_actuelle = 0
-            serie_max = 0
-
-            for m in matchs_tries:
+            for m in sorted(matchs_filtres, key=lambda m: str(m.date)):
                 if equipe_filtre.lower() in m.equipe_1.lower():
-                    marques = m.score_1 or 0
-                    encaisses = m.score_2 or 0
+                    marques, encaisses = m.score_1 or 0, m.score_2 or 0
                 else:
-                    marques = m.score_2 or 0
-                    encaisses = m.score_1 or 0
+                    marques, encaisses = m.score_2 or 0, m.score_1 or 0
 
                 points_marques.append(marques)
                 points_encaisses.append(encaisses)
@@ -165,21 +248,30 @@ class Match:
                     nuls += 1
                     serie_actuelle = 0
 
-            moy_marques = sum(points_marques) / len(points_marques) if points_marques else 0
-            moy_encaisses = sum(points_encaisses) / len(points_encaisses) if points_encaisses else 0
+            moy_m = sum(points_marques)   / len(points_marques)   if points_marques   else 0
+            moy_e = sum(points_encaisses) / len(points_encaisses) if points_encaisses else 0
 
             print(f"  Victoires                : {victoires}")
             print(f"  Défaites                 : {defaites}")
-            if nuls > 0:
+            if nuls:
                 print(f"  Nuls                     : {nuls}")
-            print(f"  Moyenne points marqués   : {moy_marques:.1f}")
-            print(f"  Moyenne points encaissés : {moy_encaisses:.1f}")
+            print(f"  Moyenne points marqués   : {moy_m:.1f}")
+            print(f"  Moyenne points encaissés : {moy_e:.1f}")
             print(f"  Série de victoires max   : {serie_max}")
 
     @staticmethod
     def _afficher(resultats: list, limite: int = 20) -> None:
-        print(f"\n{len(resultats)} résultat(s) trouvé(s) :\n")
+        """Affiche une liste de matchs avec une limite optionnelle.
+
+        Parameters
+        ----------
+        resultats : list
+            Liste de Match à afficher.
+        limite : int, optional
+            Nombre maximum de résultats affichés (par défaut 20).
+        """
+        print(f"\n  {len(resultats)} résultat(s) :\n")
         for m in resultats[:limite]:
-            print(m)
+            print(f"  {m}")
         if len(resultats) > limite:
-            print(f"... ({len(resultats) - limite} résultats supplémentaires non affichés)")
+            print(f"  ... ({len(resultats) - limite} résultats supplémentaires non affichés)")

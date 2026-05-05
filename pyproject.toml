@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "projet-info"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas==2.3.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.3",
+    "pytest-cov==7.1.0",
+    "black==25.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+
+[tool.black]
+line-length = 120
+
+[tool.flake8]
+exclude = [".git", "__pycache__", "build", "dist"]
+max-complexity = 8
+max-line-length = 120

@@ -1,4 +1,11 @@
-class Sport :
+class Sport:
+    """Représente un sport identifié par son nom.
+
+    Parameters
+    ----------
+    nom : str
+        Nom du sport (ex : "football", "LOL", "basketball").
+    """
 
     def __init__(self, nom: str) -> None:
 

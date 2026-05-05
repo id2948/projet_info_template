@@ -12,6 +12,15 @@ class TennisMatchLoader:
     DATA_WTA_PLAYERS = "data/tennis/wta_players_2024.csv"
 
     def load_all_matches(self) -> list[Match]:
+        """Charge et retourne tous les matchs de tennis ATP et WTA 2024.
+
+        Résout les noms des joueurs à partir de leurs identifiants.
+
+        Returns
+        -------
+        list[Match]
+            Liste des matchs ATP et WTA avec noms de joueurs, tournoi, surface et tour.
+        """
         df_atp_m = pd.read_csv(self.DATA_ATP_MATCHES)
         df_wta_m = pd.read_csv(self.DATA_WTA_MATCHES)
         df_atp_p = pd.read_csv(self.DATA_ATP_PLAYERS)

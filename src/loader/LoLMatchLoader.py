@@ -9,6 +9,13 @@ class LOLMatchLoader:
     DATA_MATCHES = "data/LOL/match.csv"
 
     def load_all_matches(self) -> list[Match]:
+        """Charge et retourne tous les matchs de League of Legends.
+
+        Returns
+        -------
+        list[Match]
+            Liste des matchs avec équipes, kills, patch, semaine et vainqueur.
+        """
         df = pd.read_csv(self.DATA_MATCHES)
 
         df_out = pd.DataFrame({
