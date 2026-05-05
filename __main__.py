@@ -157,7 +157,7 @@ def _boucle_categorie(sport: Sport, sport_saisi: str) -> bool:
         categorie = input("  Quelle catégorie ? ").strip().lower()
 
         if categorie in ("q", "quitter"):
-            print("\n  Au revoir !\n")
+            print("\n  Au revoir \n")
             return True
         if categorie in ("retour", "r"):
             return False
