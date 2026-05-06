@@ -50,7 +50,12 @@ class Equipe:
         """Pourcentage de victoires sur les matchs joués."""
         return self.victoires / self.matchs_joues * 100 if self.matchs_joues else 0.0
 
-    def ajouter_match(self, score_pour: float, score_contre: float, nul_possible: bool = True) -> None:
+    def ajouter_match(
+        self,
+        score_pour: float,
+        score_contre: float,
+        nul_possible: bool = True
+    ) -> None:
         """Enregistre le résultat d'un match et met à jour les statistiques.
 
         Parameters
