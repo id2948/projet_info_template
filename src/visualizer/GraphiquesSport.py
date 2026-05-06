@@ -1,0 +1,985 @@
+"""Graphiques statistiques pour chaque sport — niveau 1A ENSAI."""
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
+import pandas as pd
+import os
+
+os.makedirs("output", exist_ok=True)
+
+# ── Style commun ──────────────────────────────────────────────────────────────
+PALETTE = ["#2196F3", "#F44336", "#4CAF50", "#FF9800", "#9C27B0",
+           "#00BCD4", "#FF5722", "#607D8B", "#E91E63", "#8BC34A"]
+
+def _save(fig, nom: str) -> str:
+    safe = nom.replace("/", "-").replace(" ", "_").replace("\\", "-")
+    path = f"output/{safe}.png"
+    fig.savefig(path, dpi=130, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    return path
+
+def _style(ax, titre: str, xlabel: str = "", ylabel: str = "") -> None:
+    ax.set_title(titre, fontsize=13, fontweight="bold", pad=12)
+    if xlabel: ax.set_xlabel(xlabel, fontsize=10)
+    if ylabel: ax.set_ylabel(ylabel, fontsize=10)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.grid(axis="y", alpha=0.3, linestyle="--")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# FOOTBALL
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _charger_football(league_id: int | None = None, saison: str | None = None):
+    df = pd.read_csv("data/football/match.csv")
+    df_team = pd.read_csv("data/football/team.csv")
+    df_league = pd.read_csv("data/football/league.csv")
+    teams = {r["team_api_id"]: r["team_long_name"] for _, r in df_team.iterrows()}
+    leagues = {r["id"]: r["name"] for _, r in df_league.iterrows()}
+    if league_id:
+        df = df[df["league_id"] == league_id]
+    if saison:
+        df = df[df["season"] == saison]
+    return df, teams, leagues
+
+
+def graph_foot_buts_journee(league_id: int | None = None, saison: str | None = None) -> str:
+    """Évolution des buts moyens par journée (stage) sur une saison."""
+    df, _, leagues = _charger_football(league_id, saison)
+    if df.empty:
+        raise ValueError("Aucun match trouvé.")
+    df["total_buts"] = df["home_team_goal"] + df["away_team_goal"]
+    par_journee = df.groupby("stage")["total_buts"].mean().reset_index()
+    par_journee = par_journee.sort_values("stage")
+
+    fig, ax = plt.subplots(figsize=(11, 5))
+    ax.plot(par_journee["stage"], par_journee["total_buts"],
+            marker="o", color=PALETTE[0], linewidth=2, markersize=5)
+    ax.fill_between(par_journee["stage"], par_journee["total_buts"],
+                    alpha=0.15, color=PALETTE[0])
+    nom = leagues.get(league_id, "Toutes ligues") if league_id else "Toutes ligues"
+    titre = f"Buts moyens par journée — {nom}" + (f" {saison}" if saison else "")
+    _style(ax, titre, "Journée", "Buts moyens / match")
+    ax.set_xticks(par_journee["stage"])
+    ax.tick_params(axis="x", rotation=45)
+    return _save(fig, f"foot_buts_journee_{league_id or 'all'}_{saison or 'all'}")
+
+
+def graph_foot_dist_scores(league_id: int | None = None, saison: str | None = None) -> str:
+    """Histogramme de la distribution des buts par équipe par match."""
+    df, _, leagues = _charger_football(league_id, saison)
+    scores = pd.concat([df["home_team_goal"], df["away_team_goal"]])
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    max_s = int(scores.max()) + 1
+    ax.hist(scores, bins=range(max_s + 1), color=PALETTE[0], edgecolor="white",
+            rwidth=0.8, align="left")
+    nom = leagues.get(league_id, "Toutes ligues") if league_id else "Toutes ligues"
+    _style(ax, f"Distribution des buts par équipe — {nom}", "Buts marqués", "Nombre de matchs")
+    ax.set_xticks(range(max_s))
+    return _save(fig, f"foot_dist_scores_{league_id or 'all'}_{saison or 'all'}")
+
+
+def graph_foot_attaque_defense(league_id: int | None = None, saison: str | None = None) -> str:
+    """Scatter buts pour vs buts contre — taille de bulle = matchs joués."""
+    df, teams, leagues = _charger_football(league_id, saison)
+
+    stats: dict = {}
+    for _, row in df.iterrows():
+        hid, aid = int(row["home_team_api_id"]), int(row["away_team_api_id"])
+        hg, ag   = int(row["home_team_goal"]),  int(row["away_team_goal"])
+        for tid, g_for, g_ag in [(hid, hg, ag), (aid, ag, hg)]:
+            if tid not in stats:
+                stats[tid] = [0, 0, 0]
+            stats[tid][0] += g_for
+            stats[tid][1] += g_ag
+            stats[tid][2] += 1
+
+    noms  = [teams.get(t, str(t)) for t in stats]
+    pour  = [v[0] for v in stats.values()]
+    contr = [v[1] for v in stats.values()]
+    mj    = [v[2] for v in stats.values()]
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    sc = ax.scatter(pour, contr, s=[m * 2 for m in mj],
+                    c=PALETTE[0], alpha=0.55, edgecolors="white", linewidth=0.5)
+    lim = max(max(pour), max(contr)) * 1.05
+    ax.plot([0, lim], [0, lim], color="gray", linestyle="--", alpha=0.5, label="Équilibre")
+    nom = leagues.get(league_id, "Toutes ligues") if league_id else "Toutes ligues"
+    _style(ax, f"Attaque vs Défense — {nom}", "Buts marqués", "Buts encaissés")
+    ax.legend(fontsize=9)
+    # Labels top 5 attaque
+    idx_top = sorted(range(len(pour)), key=lambda i: pour[i], reverse=True)[:5]
+    for i in idx_top:
+        ax.annotate(noms[i], (pour[i], contr[i]), fontsize=7, ha="center",
+                    xytext=(0, 7), textcoords="offset points")
+    return _save(fig, f"foot_attaque_defense_{league_id or 'all'}_{saison or 'all'}")
+
+
+def graph_foot_camembert_ligues() -> str:
+    """Répartition du nombre de matchs par ligue."""
+    df_match  = pd.read_csv("data/football/match.csv")
+    df_league = pd.read_csv("data/football/league.csv")
+    leagues   = {r["id"]: r["name"] for _, r in df_league.iterrows()}
+    nb = df_match.groupby("league_id").size()
+    noms = [leagues.get(lid, str(lid)) for lid in nb.index]
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+    wedges, texts, autotexts = ax.pie(
+        nb.values, labels=noms, autopct="%1.1f%%",
+        colors=PALETTE[:len(nb)], startangle=140,
+        wedgeprops={"edgecolor": "white", "linewidth": 1.5},
+        pctdistance=0.82)
+    for t in autotexts: t.set_fontsize(8)
+    ax.set_title("Répartition des matchs par ligue", fontsize=13, fontweight="bold", pad=14)
+    return _save(fig, "foot_camembert_ligues")
+
+
+def graph_foot_taille_poids() -> str:
+    """Scatter taille vs poids des joueurs de football."""
+    df = pd.read_csv("data/football/player.csv").dropna(subset=["height (cm)", "weight (kg)"])
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    ax.scatter(df["height (cm)"], df["weight (kg)"],
+               alpha=0.3, s=15, color=PALETTE[0], edgecolors="none")
+    _style(ax, "Taille vs Poids — joueurs de football", "Taille (cm)", "Poids (kg)")
+    ax.grid(axis="both", alpha=0.3, linestyle="--")
+    return _save(fig, "foot_taille_poids")
+
+
+def graph_foot_pyramide_ages() -> str:
+    """Pyramide des âges des joueurs de football (par tranche de 2 ans)."""
+    df = pd.read_csv("data/football/player.csv").dropna(subset=["birthday"])
+    df["annee"] = pd.to_datetime(df["birthday"], errors="coerce").dt.year
+    df = df.dropna(subset=["annee"])
+    df["age"] = 2024 - df["annee"].astype(int)
+    df = df[(df["age"] >= 15) & (df["age"] <= 45)]
+    tranches = pd.cut(df["age"], bins=range(15, 47, 2))
+    counts = tranches.value_counts().sort_index()
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+    labels = [str(iv) for iv in counts.index]
+    ax.barh(labels, counts.values, color=PALETTE[0], edgecolor="white")
+    _style(ax, "Pyramide des âges — joueurs de football", "Nombre de joueurs", "Tranche d'âge")
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    ax.grid(axis="y", alpha=0)
+    return _save(fig, "foot_pyramide_ages")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# BASKETBALL
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _charger_basketball(season_type: str = "Regular Season"):
+    df_game = pd.read_csv("data/basketball/game.csv")
+    df_team = pd.read_csv("data/basketball/team.csv")
+    teams   = {r["id"]: r["full_name"] for _, r in df_team.iterrows()}
+    abbrevs = {r["id"]: r["abbreviation"] for _, r in df_team.iterrows()}
+    df = df_game[df_game["season_type"] == season_type]
+    return df, teams, abbrevs
+
+
+def graph_basket_dist_scores(season_type: str = "Regular Season") -> str:
+    """Histogramme de la distribution des points marqués par équipe par match."""
+    df, _, _ = _charger_basketball(season_type)
+    scores = pd.concat([df["pts_home"], df["pts_away"]])
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.hist(scores, bins=30, color=PALETTE[1], edgecolor="white")
+    _style(ax, f"Distribution des points — NBA {season_type}", "Points par match", "Fréquence")
+    mean_s = scores.mean()
+    ax.axvline(mean_s, color="black", linestyle="--", alpha=0.7,
+               label=f"Moyenne : {mean_s:.1f}")
+    ax.legend(fontsize=9)
+    return _save(fig, f"basket_dist_scores_{season_type.replace(' ', '_')}")
+
+
+def graph_basket_pts_marqués_encaissés(season_type: str = "Regular Season") -> str:
+    """Scatter points marqués vs points encaissés par équipe."""
+    df, teams, abbrevs = _charger_basketball(season_type)
+
+    stats: dict = {}
+    for _, row in df.iterrows():
+        for hid, apts, bpts in [
+            (int(row["team_id_home"]), int(row["pts_home"]), int(row["pts_away"])),
+            (int(row["team_id_away"]), int(row["pts_away"]), int(row["pts_home"]))
+        ]:
+            if hid not in stats:
+                stats[hid] = [0, 0, 0]
+            stats[hid][0] += apts
+            stats[hid][1] += bpts
+            stats[hid][2] += 1
+
+    pour   = [v[0] / v[2] for v in stats.values()]
+    contr  = [v[1] / v[2] for v in stats.values()]
+    noms   = [abbrevs.get(t, str(t)) for t in stats]
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    ax.scatter(pour, contr, s=80, color=PALETTE[1], alpha=0.7, edgecolors="white")
+    lim = [min(pour + contr) - 2, max(pour + contr) + 2]
+    ax.plot(lim, lim, color="gray", linestyle="--", alpha=0.5, label="Équilibre")
+    for i, nom in enumerate(noms):
+        ax.annotate(nom, (pour[i], contr[i]), fontsize=7.5,
+                    xytext=(4, 0), textcoords="offset points")
+    _style(ax, f"Points marqués vs encaissés — NBA {season_type}",
+           "Pts marqués / match", "Pts encaissés / match")
+    ax.legend(fontsize=9)
+    return _save(fig, f"basket_pts_vs_{season_type.replace(' ', '_')}")
+
+
+def graph_basket_top_rebondeurs(season_type: str = "Regular Season", top_n: int = 15) -> str:
+    """Top N équipes au rebond — moyenne par match."""
+    df, teams, _ = _charger_basketball(season_type)
+
+    reb: dict = {}
+    mj: dict  = {}
+    for _, row in df.iterrows():
+        for tid, col in [(int(row["team_id_home"]), "reb_home"),
+                         (int(row["team_id_away"]), "reb_away")]:
+            reb[tid] = reb.get(tid, 0) + float(row.get(col) or 0)
+            mj[tid]  = mj.get(tid, 0) + 1
+
+    data = sorted([(teams.get(t, str(t)), reb[t] / mj[t])
+                   for t in reb], key=lambda x: x[1], reverse=True)[:top_n]
+    noms, vals = zip(*data)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bars = ax.barh(noms[::-1], vals[::-1], color=PALETTE[1], edgecolor="white")
+    _style(ax, f"Top {top_n} équipes au rebond — NBA {season_type}", "Rebonds / match", "")
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    ax.grid(axis="y", alpha=0)
+    for bar, val in zip(bars, vals[::-1]):
+        ax.text(val + 0.1, bar.get_y() + bar.get_height() / 2,
+                f"{val:.1f}", va="center", fontsize=8)
+    return _save(fig, f"basket_top_rebonds_{season_type.replace(' ', '_')}")
+
+
+def graph_basket_evol_scores_saison() -> str:
+    """Score moyen par match selon le type de saison (Regular Season vs Playoffs)."""
+    df_game = pd.read_csv("data/basketball/game.csv")
+    scores = pd.concat([df_game["pts_home"], df_game["pts_away"]])
+    df_all = pd.DataFrame({"pts": scores, "type": list(df_game["season_type"]) * 2})
+    moy = df_all.groupby("type")["pts"].mean().reset_index()
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(moy["type"], moy["pts"], color=PALETTE[:len(moy)], edgecolor="white", width=0.5)
+    _style(ax, "Score moyen par type de saison — NBA", "", "Points / match")
+    for i, row in moy.iterrows():
+        ax.text(i, row["pts"] + 0.3, f"{row['pts']:.1f}", ha="center", fontsize=10)
+    return _save(fig, "basket_evol_scores_saison")
+
+
+def graph_basket_taille_poids() -> str:
+    """Scatter taille vs poids des joueurs NBA, coloré par position."""
+    df = pd.read_csv("data/basketball/player.csv").dropna(subset=["height", "weight"])
+    positions = df["position"].fillna("Unknown").unique()
+    cmap = {p: PALETTE[i % len(PALETTE)] for i, p in enumerate(positions)}
+
+    fig, ax = plt.subplots(figsize=(10, 7))
+    for pos in positions:
+        sub = df[df["position"] == pos]
+        ax.scatter(sub["height"], sub["weight"], label=pos, alpha=0.5,
+                   s=20, color=cmap[pos], edgecolors="none")
+    _style(ax, "Taille vs Poids — joueurs NBA", "Taille (cm)", "Poids (kg)")
+    ax.legend(fontsize=7, ncol=2, loc="upper left")
+    ax.grid(axis="both", alpha=0.3, linestyle="--")
+    return _save(fig, "basket_taille_poids")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LEAGUE OF LEGENDS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _charger_lol():
+    df       = pd.read_csv("data/LOL/match.csv")
+    df_team  = pd.read_csv("data/LOL/team.csv")
+    df_player = pd.read_csv("data/LOL/player.csv")
+    teams_info = {r["team_abbreviation"]: r["team"] for _, r in df_team.iterrows()}
+    return df, teams_info, df_player
+
+
+def graph_lol_barres_groupees() -> str:
+    """Kills, Dragons et Barons moyens par équipe — barres groupées."""
+    df, teams_info, _ = _charger_lol()
+
+    stats: dict = {}
+    for _, row in df.iterrows():
+        for side, opp in [("blue", "red"), ("red", "blue")]:
+            abrev = str(row[f"team_{side}"])
+            if abrev not in stats:
+                stats[abrev] = {"kills": 0, "dragons": 0, "barons": 0, "mj": 0}
+            stats[abrev]["kills"]   += int(row.get(f"kills_team_{side}")   or 0)
+            stats[abrev]["dragons"] += int(row.get(f"dragons_team_{side}") or 0)
+            stats[abrev]["barons"]  += int(row.get(f"barons_team_{side}")  or 0)
+            stats[abrev]["mj"]      += 1
+
+    equipes = list(stats.keys())
+    noms    = [teams_info.get(e, e) for e in equipes]
+    mj_arr  = [stats[e]["mj"] or 1 for e in equipes]
+    kills   = [stats[e]["kills"]   / mj_arr[i] for i, e in enumerate(equipes)]
+    dragons = [stats[e]["dragons"] / mj_arr[i] for i, e in enumerate(equipes)]
+    barons  = [stats[e]["barons"]  / mj_arr[i] for i, e in enumerate(equipes)]
+
+    x = np.arange(len(noms))
+    w = 0.25
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.bar(x - w, kills,   width=w, label="Kills/match",   color=PALETTE[0], edgecolor="white")
+    ax.bar(x,     dragons, width=w, label="Dragons/match", color=PALETTE[2], edgecolor="white")
+    ax.bar(x + w, barons,  width=w, label="Barons/match",  color=PALETTE[3], edgecolor="white")
+    ax.set_xticks(x)
+    ax.set_xticklabels(noms, rotation=30, ha="right", fontsize=9)
+    _style(ax, "Kills / Dragons / Barons par équipe — LoL EMEA 2025", "", "Moyenne / match")
+    ax.legend(fontsize=9)
+    return _save(fig, "lol_barres_groupees")
+
+
+def graph_lol_gold_winrate() -> str:
+    """Scatter : gold moyen par match vs taux de victoire."""
+    df, teams_info, _ = _charger_lol()
+
+    stats: dict = {}
+    for _, row in df.iterrows():
+        for side, opp in [("blue", "red"), ("red", "blue")]:
+            abrev = str(row[f"team_{side}"])
+            if abrev not in stats:
+                stats[abrev] = {"gold": 0, "victoires": 0, "mj": 0}
+            stats[abrev]["gold"]      += float(row.get(f"gold_team_{side}") or 0)
+            stats[abrev]["victoires"] += 1 if str(row["winner"]) == abrev else 0
+            stats[abrev]["mj"]        += 1
+
+    noms    = [teams_info.get(e, e) for e in stats]
+    gold    = [stats[e]["gold"] / (stats[e]["mj"] or 1) for e in stats]
+    winrate = [stats[e]["victoires"] / (stats[e]["mj"] or 1) * 100 for e in stats]
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    ax.scatter(gold, winrate, s=100, color=PALETTE[4], alpha=0.8, edgecolors="white")
+    for i, nom in enumerate(noms):
+        ax.annotate(nom, (gold[i], winrate[i]), fontsize=8,
+                    xytext=(5, 3), textcoords="offset points")
+    _style(ax, "Gold moyen vs Winrate — LoL EMEA 2025", "Gold moyen / match", "Winrate (%)")
+    ax.grid(axis="both", alpha=0.3, linestyle="--")
+    return _save(fig, "lol_gold_winrate")
+
+
+def graph_lol_camembert_roles() -> str:
+    """Répartition des joueurs par rôle — camembert."""
+    _, _, df_player = _charger_lol()
+    roles = df_player["role"].str.strip().str.lower().value_counts()
+    labels_clean = {
+        "top": "Top", "jungle": "Jungle", "mid": "Mid",
+        "bottom": "Bot/ADC", "support": "Support",
+    }
+    labels = [labels_clean.get(r, r.capitalize()) for r in roles.index]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.pie(roles.values, labels=labels, autopct="%1.1f%%",
+           colors=PALETTE[:len(roles)], startangle=90,
+           wedgeprops={"edgecolor": "white", "linewidth": 1.5})
+    ax.set_title("Répartition des joueurs par rôle — LoL EMEA 2025",
+                 fontsize=13, fontweight="bold", pad=12)
+    return _save(fig, "lol_camembert_roles")
+
+
+def graph_lol_classement() -> str:
+    """Classement général LoL — barres horizontales par victoires."""
+    df, teams_info, _ = _charger_lol()
+
+    victoires: dict = {}
+    mj: dict = {}
+    for _, row in df.iterrows():
+        for side in ["blue", "red"]:
+            abrev = str(row[f"team_{side}"])
+            victoires[abrev] = victoires.get(abrev, 0) + (1 if str(row["winner"]) == abrev else 0)
+            mj[abrev] = mj.get(abrev, 0) + 1
+
+    data = sorted([(teams_info.get(e, e), victoires[e], mj[e])
+                   for e in victoires], key=lambda x: x[1], reverse=True)
+    noms = [d[0] for d in data]
+    vals = [d[1] for d in data]
+    colors = [PALETTE[2]] * min(4, len(noms)) + [PALETTE[0]] * max(0, len(noms) - 6) + [PALETTE[1]] * 2
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.barh(noms[::-1], vals[::-1], color=colors[::-1], edgecolor="white")
+    _style(ax, "Classement LoL EMEA 2025", "Victoires", "")
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    ax.grid(axis="y", alpha=0)
+    for i, v in enumerate(vals[::-1]):
+        ax.text(v + 0.1, i, str(v), va="center", fontsize=9)
+    return _save(fig, "lol_classement")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# TENNIS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _charger_tennis(circuit: str = "ATP"):
+    circuit = circuit.upper()
+    if circuit == "ATP":
+        df_m = pd.read_csv("data/tennis/atp_matches_2024.csv")
+        df_p = pd.read_csv("data/tennis/atp_players_2024.csv")
+    else:
+        df_m = pd.read_csv("data/tennis/wta_matches_2024.csv")
+        df_p = pd.read_csv("data/tennis/wta_players_2024.csv")
+    players = {str(int(r["player_id"])): r["name_first"] + " " + r["name_last"]
+               for _, r in df_p.iterrows()}
+    return df_m, df_p, players
+
+
+def graph_tennis_top10(circuit: str = "ATP", top_n: int = 10) -> str:
+    """Barres horizontales — top N joueurs par victoires."""
+    df_m, _, players = _charger_tennis(circuit)
+
+    wins: dict = {}
+    for _, row in df_m.iterrows():
+        wid = str(int(row["winner_id"]))
+        wins[wid] = wins.get(wid, 0) + 1
+
+    data = sorted(wins.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    noms = [players.get(k, k) for k, _ in data]
+    vals = [v for _, v in data]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bars = ax.barh(noms[::-1], vals[::-1],
+                   color=PALETTE[5], edgecolor="white")
+    _style(ax, f"Top {top_n} joueurs {circuit} 2024 — victoires", "Victoires", "")
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    ax.grid(axis="y", alpha=0)
+    for bar, val in zip(bars, vals[::-1]):
+        ax.text(val + 0.3, bar.get_y() + bar.get_height() / 2,
+                str(val), va="center", fontsize=9)
+    return _save(fig, f"tennis_top10_{circuit.lower()}")
+
+
+def graph_tennis_surface(circuit: str = "ATP") -> str:
+    """Camembert — répartition des matchs par surface."""
+    df_m, _, _ = _charger_tennis(circuit)
+    surfaces = df_m["surface"].fillna("Unknown").value_counts()
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.pie(surfaces.values, labels=surfaces.index, autopct="%1.1f%%",
+           colors=PALETTE[:len(surfaces)], startangle=120,
+           wedgeprops={"edgecolor": "white", "linewidth": 1.5})
+    ax.set_title(f"Répartition des matchs par surface — {circuit} 2024",
+                 fontsize=13, fontweight="bold", pad=12)
+    return _save(fig, f"tennis_surface_{circuit.lower()}")
+
+
+def graph_tennis_atp_wta_taille() -> str:
+    """Barres groupées — distribution des tailles ATP vs WTA."""
+    df_atp = pd.read_csv("data/tennis/atp_players_2024.csv").dropna(subset=["height"])
+    df_wta = pd.read_csv("data/tennis/wta_players_2024.csv").dropna(subset=["height"])
+
+    bins = list(range(155, 215, 5))
+    labels = [f"{b}–{b+5}" for b in bins[:-1]]
+    atp_counts = pd.cut(df_atp["height"], bins=bins).value_counts().sort_index().values
+    wta_counts = pd.cut(df_wta["height"], bins=bins).value_counts().sort_index().values
+
+    x = np.arange(len(labels))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(12, 5))
+    ax.bar(x - w / 2, atp_counts, width=w, label="ATP", color=PALETTE[0], edgecolor="white")
+    ax.bar(x + w / 2, wta_counts, width=w, label="WTA", color=PALETTE[3], edgecolor="white")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=45)
+    _style(ax, "Distribution des tailles — ATP vs WTA 2024", "Taille (cm)", "Nombre de joueurs")
+    ax.legend(fontsize=10)
+    return _save(fig, "tennis_atp_wta_taille")
+
+
+def graph_tennis_nationalite(circuit: str = "ATP", top_n: int = 6) -> str:
+    """Camembert — top N nationalités + Autres."""
+    _, df_p, _ = _charger_tennis(circuit)
+    nat = df_p["ioc"].fillna("?").value_counts()
+    top = nat.head(top_n)
+    autres = nat.iloc[top_n:].sum()
+    labels = list(top.index) + ["Autres"]
+    vals   = list(top.values) + [autres]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.pie(vals, labels=labels, autopct="%1.1f%%",
+           colors=PALETTE[:len(vals)], startangle=90,
+           wedgeprops={"edgecolor": "white", "linewidth": 1.5})
+    ax.set_title(f"Répartition par nationalité — {circuit} 2024",
+                 fontsize=13, fontweight="bold", pad=12)
+    return _save(fig, f"tennis_nationalite_{circuit.lower()}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# VOLLEYBALL
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _charger_volley(genre: str = "Hommes"):
+    is_men = genre.lower() in ("hommes", "h", "men")
+    df_m = pd.read_csv("data/volley/match_men.csv" if is_men else "data/volley/match_women.csv")
+    df_p = pd.read_csv("data/volley/player_men.csv" if is_men else "data/volley/player_women.csv")
+    df_country = pd.read_csv("data/volley/country.csv")
+    countries  = {r["code"]: r["country"] for _, r in df_country.iterrows()}
+    if is_men:
+        df_m["code_1"], df_m["code_2"] = df_m["country_code_1"], df_m["country_code_2"]
+    else:
+        df_m["code_1"], df_m["code_2"] = df_m["country_1"], df_m["country_2"]
+    return df_m, df_p, countries, is_men
+
+
+def graph_volley_sets_pays() -> str:
+    """Barres horizontales — sets gagnés par pays, Hommes et Femmes côte à côte."""
+    df_men,   _, countries, _ = _charger_volley("Hommes")
+    df_women, _, _,         _ = _charger_volley("Femmes")
+
+    def _sets(df):
+        sets: dict = {}
+        for _, row in df.iterrows():
+            c1, c2 = str(row["code_1"]), str(row["code_2"])
+            s1, s2 = int(row["set_country_1"]), int(row["set_country_2"])
+            sets[c1] = sets.get(c1, 0) + s1
+            sets[c2] = sets.get(c2, 0) + s2
+        return sets
+
+    sets_m = _sets(df_men)
+    sets_w = _sets(df_women)
+    all_codes = sorted(set(list(sets_m.keys()) + list(sets_w.keys())))
+    noms = [countries.get(c, c) for c in all_codes]
+    vals_m = [sets_m.get(c, 0) for c in all_codes]
+    vals_w = [sets_w.get(c, 0) for c in all_codes]
+
+    x = np.arange(len(noms))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(11, 6))
+    ax.barh(x - w / 2, vals_m, height=w, label="Hommes", color=PALETTE[0], edgecolor="white")
+    ax.barh(x + w / 2, vals_w, height=w, label="Femmes", color=PALETTE[3], edgecolor="white")
+    ax.set_yticks(x)
+    ax.set_yticklabels(noms, fontsize=9)
+    _style(ax, "Sets gagnés par pays — JO 2024", "Sets gagnés", "")
+    ax.legend(fontsize=10)
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    ax.grid(axis="y", alpha=0)
+    return _save(fig, "volley_sets_pays")
+
+
+def graph_volley_taille_pays() -> str:
+    """Taille moyenne des joueurs par pays — Hommes vs Femmes."""
+    df_men, dp_m, countries, _ = _charger_volley("Hommes")
+    _, dp_w, _, _              = _charger_volley("Femmes")
+
+    def _moy_taille(df_p):
+        df_p = df_p.dropna(subset=["height"])
+        df_p["height"] = pd.to_numeric(df_p["height"], errors="coerce")
+        return df_p.groupby("country_code")["height"].mean()
+
+    moy_m = _moy_taille(dp_m)
+    moy_w = _moy_taille(dp_w)
+    codes = sorted(set(list(moy_m.index) + list(moy_w.index)))
+    noms  = [countries.get(c, c) for c in codes]
+    vals_m = [moy_m.get(c, float("nan")) for c in codes]
+    vals_w = [moy_w.get(c, float("nan")) for c in codes]
+
+    x = np.arange(len(noms))
+    w = 0.35
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.bar(x - w / 2, vals_m, width=w, label="Hommes", color=PALETTE[0], edgecolor="white")
+    ax.bar(x + w / 2, vals_w, width=w, label="Femmes", color=PALETTE[3], edgecolor="white")
+    ax.set_xticks(x)
+    ax.set_xticklabels(noms, rotation=35, ha="right", fontsize=8)
+    _style(ax, "Taille moyenne par pays — JO 2024", "", "Taille (cm)")
+    ax.legend(fontsize=10)
+    ax.set_ylim(160, 210)
+    return _save(fig, "volley_taille_pays")
+
+
+def graph_volley_camembert_pays(genre: str = "Hommes") -> str:
+    """Répartition géographique des équipes participantes."""
+    _, _, countries, is_men = _charger_volley(genre)
+    df_m = pd.read_csv("data/volley/match_men.csv" if is_men else "data/volley/match_women.csv")
+    col1 = "country_code_1" if is_men else "country_1"
+    col2 = "country_code_2" if is_men else "country_2"
+    codes = pd.concat([df_m[col1], df_m[col2]]).value_counts()
+    labels = [countries.get(c, c) for c in codes.index]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.pie(codes.values, labels=labels, autopct="%1.1f%%",
+           colors=PALETTE[:len(codes)], startangle=90,
+           wedgeprops={"edgecolor": "white", "linewidth": 1.5})
+    ax.set_title(f"Répartition des matchs par pays — Volley {genre} JO 2024",
+                 fontsize=12, fontweight="bold", pad=12)
+    return _save(fig, f"volley_camembert_{genre.lower()}")
+
+
+def graph_volley_pyramide_ages(genre: str = "Hommes") -> str:
+    """Pyramide des âges des joueurs de volleyball."""
+    _, df_p, _, is_men = _charger_volley(genre)
+    df_p = df_p.dropna(subset=["birth_date"])
+    df_p["annee"] = pd.to_datetime(df_p["birth_date"], errors="coerce").dt.year
+    df_p = df_p.dropna(subset=["annee"])
+    df_p["age"] = 2024 - df_p["annee"].astype(int)
+    df_p = df_p[(df_p["age"] >= 16) & (df_p["age"] <= 42)]
+    tranches = pd.cut(df_p["age"], bins=range(16, 44, 2))
+    counts = tranches.value_counts().sort_index()
+
+    fig, ax = plt.subplots(figsize=(9, 6))
+    ax.barh([str(iv) for iv in counts.index], counts.values,
+            color=PALETTE[0] if is_men else PALETTE[3], edgecolor="white")
+    _style(ax, f"Pyramide des âges — Volleyball {genre} JO 2024",
+           "Nombre de joueurs", "Tranche d'âge")
+    ax.grid(axis="x", alpha=0.3, linestyle="--")
+    ax.grid(axis="y", alpha=0)
+    return _save(fig, f"volley_pyramide_ages_{genre.lower()}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# GRAPHIQUES MULTI-SPORT (Équipe / Compétition)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def graph_radar_equipe(sport: str, equipe_nom: str) -> str:
+    """Spider chart des performances d'une équipe (attaque, défense, winrate, régularité)."""
+    from src.loader.CompetitionLoader import CompetitionLoader
+    from src.loader.GestionResultats import GestionResultats
+
+    # Charge la compétition selon le sport pour récupérer l'équipe
+    comps = _construire_competition_generique(sport)
+    if comps is None:
+        raise ValueError(f"Sport non supporté : {sport}")
+
+    eq = None
+    for e in comps.equipes.values():
+        if equipe_nom.lower() in e.nom.lower():
+            eq = e
+            break
+    if eq is None:
+        raise ValueError(f"Équipe '{equipe_nom}' non trouvée dans {sport}.")
+
+    mj = eq.matchs_joues or 1
+    # Normalise les métriques 0–1 relativement aux autres équipes
+    all_eq = list(comps.equipes.values())
+    max_attaque = max(e.score_pour / (e.matchs_joues or 1) for e in all_eq) or 1
+    max_defense = max(e.score_contre / (e.matchs_joues or 1) for e in all_eq) or 1
+    max_pts     = max(e.points for e in all_eq) or 1
+
+    attaque     = (eq.score_pour  / mj) / max_attaque
+    defense_inv = 1 - (eq.score_contre / mj) / max_defense   # inversé : moins c'est mieux
+    winrate     = eq.winrate / 100
+    regularite  = eq.points / max_pts
+    victoires   = eq.victoires / mj
+
+    categories = ["Attaque", "Défense\n(inversée)", "Winrate", "Points\n(classement)", "Victoires\n/ match"]
+    vals = [attaque, defense_inv, winrate, regularite, victoires]
+
+    n = len(categories)
+    angles = [i / n * 2 * np.pi for i in range(n)] + [0]
+    vals_plot = vals + [vals[0]]
+
+    fig, ax = plt.subplots(figsize=(7, 7), subplot_kw={"projection": "polar"})
+    ax.plot(angles, vals_plot, color=PALETTE[0], linewidth=2)
+    ax.fill(angles, vals_plot, alpha=0.25, color=PALETTE[0])
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(categories, fontsize=10)
+    ax.set_ylim(0, 1)
+    ax.set_yticks([0.25, 0.5, 0.75, 1.0])
+    ax.set_yticklabels(["25%", "50%", "75%", "100%"], fontsize=7)
+    ax.set_title(f"Radar — {eq.nom}\n({sport})", fontsize=13, fontweight="bold", pad=20)
+    return _save(fig, f"radar_{sport}_{equipe_nom[:20].replace(' ', '_')}")
+
+
+def graph_comparaison_equipes(sport: str, nom1: str, nom2: str) -> str:
+    """Barres groupées comparant deux équipes sur leurs stats principales."""
+    comps = _construire_competition_generique(sport)
+    if comps is None:
+        raise ValueError(f"Sport non supporté : {sport}")
+
+    e1 = e2 = None
+    for e in comps.equipes.values():
+        if nom1.lower() in e.nom.lower(): e1 = e
+        if nom2.lower() in e.nom.lower(): e2 = e
+    if e1 is None or e2 is None:
+        raise ValueError(f"Une des équipes introuvable.")
+
+    mj1, mj2 = e1.matchs_joues or 1, e2.matchs_joues or 1
+    metrics = ["Points", "Victoires", "Nuls", "Défaites", "Score pour/m", "Score contre/m"]
+    vals1 = [e1.points, e1.victoires, e1.nuls, e1.defaites,
+             round(e1.score_pour / mj1, 1), round(e1.score_contre / mj1, 1)]
+    vals2 = [e2.points, e2.victoires, e2.nuls, e2.defaites,
+             round(e2.score_pour / mj2, 1), round(e2.score_contre / mj2, 1)]
+
+    x = np.arange(len(metrics))
+    w = 0.35
+    fig, ax = plt.subplots(figsize=(11, 5))
+    ax.bar(x - w / 2, vals1, width=w, label=e1.nom, color=PALETTE[0], edgecolor="white")
+    ax.bar(x + w / 2, vals2, width=w, label=e2.nom, color=PALETTE[1], edgecolor="white")
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics, fontsize=9)
+    _style(ax, f"Comparaison — {e1.nom} vs {e2.nom}", "", "Valeur")
+    ax.legend(fontsize=10)
+    return _save(fig, f"comparaison_{sport}_{nom1[:10]}_{nom2[:10]}".replace(" ", "_"))
+
+
+def _construire_competition_generique(sport: str):
+    """Construit une Competition à partir du sport, sans affichage."""
+    import pandas as pd
+    from src.Model.Competition import Competition
+    from src.Model.Equipe import Equipe
+    from src.loader.GestionResultats import GestionResultats
+
+    if sport == "football":
+        df = pd.read_csv("data/football/match.csv")
+        df_team = pd.read_csv("data/football/team.csv")
+        teams   = {r["team_api_id"]: r["team_long_name"] for _, r in df_team.iterrows()}
+        abbrevs = {r["team_api_id"]: r["team_short_name"] for _, r in df_team.iterrows()}
+        comp = Competition("Football", sport)
+        for _, row in df.iterrows():
+            hid, aid = int(row["home_team_api_id"]), int(row["away_team_api_id"])
+            hg, ag   = int(row["home_team_goal"]),   int(row["away_team_goal"])
+            for tid in [hid, aid]:
+                if str(tid) not in comp.equipes:
+                    comp.ajouter_equipe(str(tid), Equipe(teams.get(tid, str(tid)), sport, abbrevs.get(tid)))
+            comp.equipes[str(hid)].ajouter_match(hg, ag)
+            comp.equipes[str(aid)].ajouter_match(ag, hg)
+
+    elif sport == "basketball":
+        df = pd.read_csv("data/basketball/game.csv")
+        df_team = pd.read_csv("data/basketball/team.csv")
+        teams   = {r["id"]: r["full_name"] for _, r in df_team.iterrows()}
+        abbrevs = {r["id"]: r["abbreviation"] for _, r in df_team.iterrows()}
+        comp = Competition("NBA", sport)
+        for _, row in df.iterrows():
+            hid, aid   = int(row["team_id_home"]), int(row["team_id_away"])
+            hpts, apts = int(row["pts_home"]),     int(row["pts_away"])
+            for tid in [hid, aid]:
+                if str(tid) not in comp.equipes:
+                    comp.ajouter_equipe(str(tid), Equipe(teams.get(tid, str(tid)), sport, abbrevs.get(tid)))
+            comp.equipes[str(hid)].ajouter_match(hpts, apts, nul_possible=False)
+            comp.equipes[str(aid)].ajouter_match(apts, hpts, nul_possible=False)
+
+    elif sport == "LOL":
+        df = pd.read_csv("data/LOL/match.csv")
+        df_team = pd.read_csv("data/LOL/team.csv")
+        teams_info = {r["team_abbreviation"]: r["team"] for _, r in df_team.iterrows()}
+        comp = Competition("LoL EMEA 2025", sport)
+        for _, row in df.iterrows():
+            for side in ["blue", "red"]:
+                abrev = str(row[f"team_{side}"])
+                if abrev not in comp.equipes:
+                    comp.ajouter_equipe(abrev, Equipe(teams_info.get(abrev, abrev), sport, abrev))
+                e = comp.equipes[abrev]
+                e.matchs_joues += 1
+                e.score_pour   += int(row.get(f"kills_team_{side}") or 0)
+                e.score_contre += int(row.get(f"kills_team_{'red' if side == 'blue' else 'blue'}") or 0)
+                if str(row["winner"]) == abrev:
+                    e.victoires += 1; e.points += 1
+                else:
+                    e.defaites += 1
+
+    elif sport == "tennis":
+        df_m = pd.read_csv("data/tennis/atp_matches_2024.csv")
+        df_p = pd.read_csv("data/tennis/atp_players_2024.csv")
+        players = {str(int(r["player_id"])): r["name_first"] + " " + r["name_last"] for _, r in df_p.iterrows()}
+        comp = Competition("ATP 2024", sport)
+        for _, row in df_m.iterrows():
+            wid, lid = str(int(row["winner_id"])), str(int(row["loser_id"]))
+            for pid in [wid, lid]:
+                if pid not in comp.equipes:
+                    comp.ajouter_equipe(pid, Equipe(players.get(pid, pid), sport))
+            comp.equipes[wid].ajouter_match(1, 0, nul_possible=False)
+            comp.equipes[lid].ajouter_match(0, 1, nul_possible=False)
+
+    elif sport == "volley":
+        df_m = pd.read_csv("data/volley/match_men.csv")
+        df_country = pd.read_csv("data/volley/country.csv")
+        countries  = {r["code"]: r["country"] for _, r in df_country.iterrows()}
+        comp = Competition("Volley Hommes JO 2024", sport)
+        for _, row in df_m.iterrows():
+            c1, c2 = str(row["country_code_1"]), str(row["country_code_2"])
+            s1, s2 = int(row["set_country_1"]),  int(row["set_country_2"])
+            for code in [c1, c2]:
+                if code not in comp.equipes:
+                    comp.ajouter_equipe(code, Equipe(countries.get(code, code), sport, code))
+            comp.equipes[c1].ajouter_match(s1, s2, nul_possible=False)
+            comp.equipes[c2].ajouter_match(s2, s1, nul_possible=False)
+    else:
+        return None
+
+    GestionResultats.appliquer_a_competition(comp, nul_possible=(sport == "football"))
+    return comp
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# MENU INTERACTIF
+# ══════════════════════════════════════════════════════════════════════════════
+
+_MENUS: dict[str, list[tuple]] = {
+    "football": [
+        ("c",  "── Classement (tableau PNG)",          "classement"),
+        ("1",  "Buts moyens par journée",              graph_foot_buts_journee),
+        ("2",  "Distribution des scores",              graph_foot_dist_scores),
+        ("3",  "Attaque vs Défense (scatter bulle)",   graph_foot_attaque_defense),
+        ("4",  "Répartition des ligues (camembert)",   graph_foot_camembert_ligues),
+        ("5",  "Taille vs Poids des joueurs",          graph_foot_taille_poids),
+        ("6",  "Pyramide des âges",                    graph_foot_pyramide_ages),
+        ("7",  "Radar d'une équipe",                   "radar"),
+        ("8",  "Comparaison deux équipes",             "comparaison"),
+    ],
+    "basketball": [
+        ("c",  "── Classement (tableau PNG)",          "classement"),
+        ("1",  "Distribution des scores",              graph_basket_dist_scores),
+        ("2",  "Points marqués vs encaissés",          graph_basket_pts_marqués_encaissés),
+        ("3",  "Top rebondeurs",                       graph_basket_top_rebondeurs),
+        ("4",  "Scores moyen Regular vs Playoffs",     graph_basket_evol_scores_saison),
+        ("5",  "Taille vs Poids des joueurs",          graph_basket_taille_poids),
+        ("6",  "Radar d'une équipe",                   "radar"),
+        ("7",  "Comparaison deux équipes",             "comparaison"),
+    ],
+    "LOL": [
+        ("c",  "── Classement (tableau PNG)",          "classement"),
+        ("1",  "Kills / Dragons / Barons (barres)",    graph_lol_barres_groupees),
+        ("2",  "Gold moyen vs Winrate (scatter)",      graph_lol_gold_winrate),
+        ("3",  "Répartition des rôles (camembert)",    graph_lol_camembert_roles),
+        ("4",  "Radar d'une équipe",                   "radar"),
+        ("5",  "Comparaison deux équipes",             "comparaison"),
+    ],
+    "tennis": [
+        ("c",  "── Classement (tableau PNG)",          "classement"),
+        ("1",  "Top 10 joueurs ATP",                   lambda: graph_tennis_top10("ATP")),
+        ("2",  "Top 10 joueuses WTA",                  lambda: graph_tennis_top10("WTA")),
+        ("3",  "Surface ATP (camembert)",              lambda: graph_tennis_surface("ATP")),
+        ("4",  "Surface WTA (camembert)",              lambda: graph_tennis_surface("WTA")),
+        ("5",  "Taille ATP vs WTA",                    graph_tennis_atp_wta_taille),
+        ("6",  "Nationalités ATP (camembert)",         lambda: graph_tennis_nationalite("ATP")),
+        ("7",  "Nationalités WTA (camembert)",         lambda: graph_tennis_nationalite("WTA")),
+    ],
+    "volley": [
+        ("c",  "── Classement (tableau PNG)",          "classement"),
+        ("1",  "Sets gagnés par pays H/F",             graph_volley_sets_pays),
+        ("2",  "Taille moyenne par pays H/F",          graph_volley_taille_pays),
+        ("3",  "Matchs par pays — Hommes",             lambda: graph_volley_camembert_pays("Hommes")),
+        ("4",  "Matchs par pays — Femmes",             lambda: graph_volley_camembert_pays("Femmes")),
+        ("5",  "Pyramide des âges — Hommes",           lambda: graph_volley_pyramide_ages("Hommes")),
+        ("6",  "Pyramide des âges — Femmes",           lambda: graph_volley_pyramide_ages("Femmes")),
+    ],
+}
+
+
+def _run_classement(sport_nom: str) -> None:
+    """Délègue au ClassementVisualizer en collectant les paramètres nécessaires."""
+    from src.visualizer.ClassementVisualizer import (
+        visualiser_football, visualiser_basketball,
+        visualiser_lol, visualiser_tennis, visualiser_volley,
+    )
+    try:
+        if sport_nom == "football":
+            df_league = pd.read_csv("data/football/league.csv")
+            df_country = pd.read_csv("data/football/country.csv")
+            leagues  = {r["id"]: r["name"] for _, r in df_league.iterrows()}
+            lg_ctry  = {r["id"]: r["country_id"] for _, r in df_league.iterrows()}
+            countries = {r["id"]: r["name"] for _, r in df_country.iterrows()}
+            print("\n  Ligues disponibles :")
+            for lid, lname in leagues.items():
+                print(f"    {lid} - {lname} ({countries.get(lg_ctry.get(lid), '?')})")
+            lid_in = input("  ID ligue (0 = toutes) : ").strip()
+            lid = int(lid_in) if lid_in and lid_in != "0" else None
+            saisons = sorted(pd.read_csv("data/football/match.csv")["season"].unique())
+            print("  Saisons :", ", ".join(saisons))
+            saison = input("  Saison (vide = toutes) : ").strip() or None
+            path = visualiser_football(league_id=lid, saison=saison)
+
+        elif sport_nom == "basketball":
+            df_game = pd.read_csv("data/basketball/game.csv")
+            types = sorted(df_game["season_type"].unique())
+            print("  Types de saison :", ", ".join(types))
+            st = input("  Type de saison : ").strip()
+            path = visualiser_basketball(season_type=st if st in types else "Regular Season")
+
+        elif sport_nom == "LOL":
+            path = visualiser_lol()
+
+        elif sport_nom == "tennis":
+            circuit = input("  Circuit (ATP / WTA) : ").strip().upper()
+            if circuit not in ("ATP", "WTA"):
+                print("  Circuit invalide."); return
+            path = visualiser_tennis(circuit=circuit)
+
+        elif sport_nom == "volley":
+            genre = input("  Catégorie (Hommes / Femmes) : ").strip()
+            path = visualiser_volley(genre=genre)
+
+        else:
+            print(f"  Pas de classement pour '{sport_nom}'."); return
+
+        print(f"\n  Classement généré : {path}")
+    except Exception as e:
+        print(f"  Erreur : {e}")
+
+
+def run_menu(sport_nom: str) -> None:
+    """Menu graphique interactif pour un sport donné."""
+    os.makedirs("output", exist_ok=True)
+    menu = _MENUS.get(sport_nom)
+    if menu is None:
+        print(f"  Pas de graphiques disponibles pour '{sport_nom}'.")
+        return
+
+    while True:
+        print(f"\n  ── Graphiques — {sport_nom.upper()} " + "─" * 30)
+        for num, label, _ in menu:
+            print(f"    {num}  {label}")
+        print("    0  Retour")
+
+        choix = input("\n  Votre choix : ").strip()
+        if choix == "0":
+            break
+
+        entree = next(((n, l, fn) for n, l, fn in menu if n == choix), None)
+        if entree is None:
+            print("  Choix invalide.")
+            continue
+
+        _, label, fn = entree
+
+        if fn == "classement":
+            _run_classement(sport_nom)
+            continue
+
+        if fn == "radar":
+            nom = input("  Nom de l'équipe (ou joueur) : ").strip()
+            try:
+                path = graph_radar_equipe(sport_nom, nom)
+                print(f"\n  Graphique généré : {path}")
+            except ValueError as e:
+                print(f"  Erreur : {e}")
+            continue
+
+        if fn == "comparaison":
+            nom1 = input("  Équipe 1 : ").strip()
+            nom2 = input("  Équipe 2 : ").strip()
+            try:
+                path = graph_comparaison_equipes(sport_nom, nom1, nom2)
+                print(f"\n  Graphique généré : {path}")
+            except ValueError as e:
+                print(f"  Erreur : {e}")
+            continue
+
+        # Graphiques avec paramètres optionnels pour le football/basket
+        try:
+            if sport_nom == "football" and choix in ("1", "2", "3"):
+                df_league = pd.read_csv("data/football/league.csv")
+                leagues   = {r["id"]: r["name"] for _, r in df_league.iterrows()}
+                print("  Ligues :", ", ".join(f"{lid}={n}" for lid, n in leagues.items()))
+                lid_in = input("  ID ligue (0 = toutes) : ").strip()
+                lid = int(lid_in) if lid_in and lid_in != "0" else None
+                df_match = pd.read_csv("data/football/match.csv")
+                saisons  = sorted(df_match["season"].unique())
+                print("  Saisons :", ", ".join(saisons))
+                saison = input("  Saison (vide = toutes) : ").strip() or None
+                path = fn(league_id=lid, saison=saison)
+            elif sport_nom == "basketball" and choix in ("1", "2", "3"):
+                df_game = pd.read_csv("data/basketball/game.csv")
+                types   = sorted(df_game["season_type"].unique())
+                print("  Types :", ", ".join(types))
+                st = input("  Type de saison : ").strip()
+                path = fn(season_type=st) if st in types else fn()
+            else:
+                path = fn()
+            print(f"\n  Graphique généré : {path}")
+        except Exception as e:
+            print(f"  Erreur : {e}")

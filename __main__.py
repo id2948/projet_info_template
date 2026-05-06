@@ -16,6 +16,7 @@ CATEGORIES = {
     "joueur":      "Recherche et statistiques des joueurs",
     "equipe":      "Statistiques d'une équipe",
     "competition": "Classements de la compétition",
+    "graphiques":  "Graphiques et classements visuels (PNG)",
     "ajouter":     "Enregistrer le résultat d'un match",
     "historique":  "Consulter les résultats enregistrés",
 }
@@ -131,6 +132,9 @@ def _executer_categorie(categorie: str, sport: Sport, sport_saisi: str) -> None:
         Equipe.run_menu(sport)
     elif categorie == "competition":
         Competition.run_menu(sport)
+    elif categorie == "graphiques":
+        from src.visualizer.GraphiquesSport import run_menu as graph_menu
+        graph_menu(sport_saisi)
     elif categorie == "ajouter":
         _ajouter_resultat(sport_saisi)
     elif categorie == "historique":
