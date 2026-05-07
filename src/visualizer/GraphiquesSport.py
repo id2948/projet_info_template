@@ -696,12 +696,9 @@ def graph_comparaison_equipes(sport: str, nom1: str, nom2: str) -> str:
     if e1 is None or e2 is None:
         raise ValueError(f"Une des équipes introuvable.")
 
-    mj1, mj2 = e1.matchs_joues or 1, e2.matchs_joues or 1
-    metrics = ["Points", "Victoires", "Nuls", "Défaites", "Score pour/m", "Score contre/m"]
-    vals1 = [e1.points, e1.victoires, e1.nuls, e1.defaites,
-             round(e1.score_pour / mj1, 1), round(e1.score_contre / mj1, 1)]
-    vals2 = [e2.points, e2.victoires, e2.nuls, e2.defaites,
-             round(e2.score_pour / mj2, 1), round(e2.score_contre / mj2, 1)]
+    metrics = ["Points", "Victoires", "Nuls", "Défaites"]
+    vals1 = [e1.points, e1.victoires, e1.nuls, e1.defaites]
+    vals2 = [e2.points, e2.victoires, e2.nuls, e2.defaites]
 
     x = np.arange(len(metrics))
     w = 0.35

@@ -72,7 +72,9 @@ class FootballCompetitionLoader:
 
         lid = self._choisir_ligue(leagues, countries, lg_ctry)
         if lid is None:
-            return saison == self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
+            return 
+        
+        saison = self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
 
         df = df_match.copy()
         if lid: df = df[df["league_id"] == lid]
