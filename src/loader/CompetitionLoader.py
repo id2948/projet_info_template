@@ -67,13 +67,10 @@ class FootballCompetitionLoader:
         print("  1 - Classement d'une ligue pour une saison")
         print("  2 - Meilleures attaques d'une ligue")
         print("  3 - Meilleures défenses d'une ligue")
-        print("  4 - Classement général toutes saisons")
+        print("  4 - Classement général d'un championnat (toutes saisons)")
         choix = input("\n  Votre choix : ").strip()
 
         lid = self._choisir_ligue(leagues, countries, lg_ctry)
-        if lid is None:
-            return 
-        
         saison = self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
 
         df = df_match.copy()
@@ -81,17 +78,18 @@ class FootballCompetitionLoader:
         if saison: df = df[df["season"] == saison]
         if df.empty: print("  Aucun match trouvé."); return
 
-        comp = self._construire(df, teams, abbrevs, leagues.get(lid, str(lid)))
+        nom_ligue = leagues.get(lid, "Toutes ligues") if lid else "Toutes ligues"
+        comp = self._construire(df, teams, abbrevs, nom_ligue)
         from src.loader.GestionResultats import GestionResultats
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=True)
         if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         if choix == "1":
             cl = comp.classement_par("points")
-            self._afficher_foot(cl, f"{comp.nom} — {saison}")
+            self._afficher_foot(cl, f"{nom_ligue} — {saison}")
         elif choix == "2":
             cl = comp.classement_par("score_pour")
-            print(f"\n=== Meilleures attaques — {comp.nom} {saison} ===\n")
+            print(f"\n=== Meilleures attaques — {nom_ligue} {saison or ''} ===\n")
             print(f"  {'#':<4}{'Équipe':<30}{'Buts':>6}{'Moy/match':>10}")
             print("  " + "─" * 52)
             for i, e in enumerate(cl, 1):
@@ -99,16 +97,15 @@ class FootballCompetitionLoader:
                 print(f"  {i:<4}{e.nom:<30}{e.score_pour:>6.0f}{moy:>10.2f}")
         elif choix == "3":
             cl = sorted(comp.equipes.values(), key=lambda e: e.score_contre)
-            print(f"\n=== Meilleures défenses — {comp.nom} {saison} ===\n")
+            print(f"\n=== Meilleures défenses — {nom_ligue} {saison or ''} ===\n")
             print(f"  {'#':<4}{'Équipe':<30}{'Buts enc.':>10}{'Moy/match':>10}")
             print("  " + "─" * 56)
             for i, e in enumerate(cl, 1):
                 moy = e.score_contre / e.matchs_joues if e.matchs_joues else 0
                 print(f"  {i:<4}{e.nom:<30}{e.score_contre:>10.0f}{moy:>10.2f}")
         elif choix == "4":
-            comp_all = self._construire(df_match, teams, abbrevs, "Toutes ligues — Toutes saisons")
-            cl = comp_all.classement_par("points")
-            self._afficher_foot(cl[:30], comp_all.nom)
+            cl = comp.classement_par("points")
+            self._afficher_foot(cl, f"{nom_ligue} — Toutes saisons")
 
     def _construire(self, df, teams, abbrevs, nom_comp: str) -> Competition:
         comp = Competition(nom_comp, "football")

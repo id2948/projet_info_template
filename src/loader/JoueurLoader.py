@@ -115,6 +115,7 @@ class BasketballJoueurLoader:
                 date_naissance=str(row["birthdate"]) if pd.notna(row["birthdate"]) else None,
                 taille=self._pieds_vers_cm(str(row["height"])),
                 poids=float(row["weight"]) * 0.453592 if pd.notna(row["weight"]) else None,
+                numero=int(row["jersey"]) if pd.notna(row["jersey"]) else None,
             ))
         return joueurs
 
@@ -180,17 +181,43 @@ JoueurLoader.register("basketball", BasketballJoueurLoader)
 class FootballJoueurLoader:
 
     DATA_PLAYERS = "data/football/player.csv"
+    DATA_MATCHES = "data/football/match.csv"
+    DATA_TEAMS   = "data/football/team.csv"
 
     def load_all_joueurs(self) -> list[Joueur]:
-        df = pd.read_csv(self.DATA_PLAYERS)
+        df        = pd.read_csv(self.DATA_PLAYERS)
+        df_match  = pd.read_csv(self.DATA_MATCHES)
+        df_team   = pd.read_csv(self.DATA_TEAMS)
+        teams     = {r["team_api_id"]: r["team_long_name"] for _, r in df_team.iterrows()}
+
+        home_cols = [f"home_player_{i}" for i in range(1, 12)]
+        away_cols = [f"away_player_{i}" for i in range(1, 12)]
+        player_teams: dict = {}
+        for _, row in df_match.iterrows():
+            htid = int(row["home_team_api_id"]) if pd.notna(row["home_team_api_id"]) else None
+            atid = int(row["away_team_api_id"]) if pd.notna(row["away_team_api_id"]) else None
+            for col in home_cols:
+                val = row.get(col)
+                if pd.notna(val) and htid:
+                    pid = int(val)
+                    player_teams.setdefault(pid, set()).add(teams.get(htid, str(htid)))
+            for col in away_cols:
+                val = row.get(col)
+                if pd.notna(val) and atid:
+                    pid = int(val)
+                    player_teams.setdefault(pid, set()).add(teams.get(atid, str(atid)))
+
         joueurs = []
         for _, row in df.iterrows():
+            pid = int(row["player_api_id"])
+            equipes = sorted(player_teams.get(pid, set())) or None
             joueurs.append(Joueur(
                 nom=str(row["player_name"]),
                 sport="football",
                 date_naissance=str(row["birthday"]) if pd.notna(row["birthday"]) else None,
                 taille=float(row["height (cm)"]) if pd.notna(row["height (cm)"]) else None,
                 poids=float(row["weight (kg)"]) if pd.notna(row["weight (kg)"]) else None,
+                equipes_historique=equipes,
             ))
         return joueurs
 
@@ -437,6 +464,7 @@ class VolleyJoueurLoader:
                 date_naissance=str(row["birth_date"]) if pd.notna(row["birth_date"]) else None,
                 taille=float(row["height"]) if pd.notna(row["height"]) else None,
                 pseudo=str(row["nickname"]) if pd.notna(row["nickname"]) and str(row["nickname"]) != "" else None,
+                lieu_naissance=str(row["birth_place"]) if pd.notna(row["birth_place"]) and str(row["birth_place"]) != "" else None,
             ))
         return joueurs
 
