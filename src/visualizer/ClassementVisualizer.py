@@ -1,6 +1,7 @@
 """Visualiseur de classements sportifs sous forme de tableaux matplotlib."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -13,14 +14,14 @@ from src.Model.Equipe import Equipe
 
 # ── Palette ──────────────────────────────────────────────────────────────────
 
-_HEADER_BG   = "#1a1a2e"
-_HEADER_FG   = "#ffffff"
-_ROW_ODD     = "#f8f9fa"
-_ROW_EVEN    = "#ffffff"
-_ZONE_TOP    = "#d4edda"   # vert clair — podium / qualification
-_ZONE_MID    = "#fff3cd"   # jaune — barrage
-_ZONE_BOT    = "#f8d7da"   # rouge clair — relégation
-_BORDER      = "#dee2e6"
+_HEADER_BG = "#1a1a2e"
+_HEADER_FG = "#ffffff"
+_ROW_ODD = "#f8f9fa"
+_ROW_EVEN = "#ffffff"
+_ZONE_TOP = "#d4edda"  # vert clair — podium / qualification
+_ZONE_MID = "#fff3cd"  # jaune — barrage
+_ZONE_BOT = "#f8d7da"  # rouge clair — relégation
+_BORDER = "#dee2e6"
 _TITLE_COLOR = "#1a1a2e"
 
 
@@ -68,8 +69,9 @@ def _fig_classement(
     ax.axis("off")
     fig.patch.set_facecolor("#ffffff")
 
-    ax.set_title(titre, fontsize=15, fontweight="bold",
-                 color=_TITLE_COLOR, pad=14, loc="center")
+    ax.set_title(
+        titre, fontsize=15, fontweight="bold", color=_TITLE_COLOR, pad=14, loc="center"
+    )
 
     col_w = largeurs if largeurs else [1 / n_cols] * n_cols
     total_w = sum(col_w)
@@ -89,7 +91,7 @@ def _fig_classement(
         cell_colors.append(row_colors)
 
     header_colors = [[_HEADER_BG] * n_cols]
-    all_cell_text  = [colonnes] + lignes
+    all_cell_text = [colonnes] + lignes
     all_cell_color = header_colors + cell_colors
 
     tbl = ax.table(
@@ -117,10 +119,18 @@ def _fig_classement(
             cell.set_width(col_w[col_idx])
 
     if legende:
-        handles = [mpatches.Patch(facecolor=c, edgecolor=_BORDER, label=l) for c, l in legende]
-        ax.legend(handles=handles, loc="lower center", ncol=len(legende),
-                  fontsize=8, frameon=True, edgecolor=_BORDER,
-                  bbox_to_anchor=(0.5, 0.0))
+        handles = [
+            mpatches.Patch(facecolor=c, edgecolor=_BORDER, label=l) for c, l in legende
+        ]
+        ax.legend(
+            handles=handles,
+            loc="lower center",
+            ncol=len(legende),
+            fontsize=8,
+            frameon=True,
+            edgecolor=_BORDER,
+            bbox_to_anchor=(0.5, 0.0),
+        )
 
     plt.tight_layout(pad=0.4)
 
@@ -135,6 +145,7 @@ def _fig_classement(
 
 
 # ── Football ──────────────────────────────────────────────────────────────────
+
 
 def visualiser_football(
     league_id: int | None = None,
@@ -152,14 +163,14 @@ def visualiser_football(
     save_path : str | None
         Chemin de sortie.
     """
-    df_match  = pd.read_csv("data/football/match.csv")
-    df_team   = pd.read_csv("data/football/team.csv")
+    df_match = pd.read_csv("data/football/match.csv")
+    df_team = pd.read_csv("data/football/team.csv")
     df_league = pd.read_csv("data/football/league.csv")
     df_country = pd.read_csv("data/football/country.csv")
 
-    teams   = {r["team_api_id"]: r["team_long_name"]  for _, r in df_team.iterrows()}
+    teams = {r["team_api_id"]: r["team_long_name"] for _, r in df_team.iterrows()}
     abbrevs = {r["team_api_id"]: r["team_short_name"] for _, r in df_team.iterrows()}
-    leagues  = {r["id"]: r["name"] for _, r in df_league.iterrows()}
+    leagues = {r["id"]: r["name"] for _, r in df_league.iterrows()}
 
     df = df_match.copy()
     if league_id:
@@ -170,16 +181,21 @@ def visualiser_football(
     if df.empty:
         raise ValueError("Aucun match trouvé pour ces critères.")
 
-    nom_ligue = leagues.get(league_id, "Toutes ligues") if league_id else "Toutes ligues"
-    nom_comp  = f"{nom_ligue} — {saison}" if saison else nom_ligue
+    nom_ligue = (
+        leagues.get(league_id, "Toutes ligues") if league_id else "Toutes ligues"
+    )
+    nom_comp = f"{nom_ligue} — {saison}" if saison else nom_ligue
 
     comp = Competition(nom_comp, "football")
     for _, row in df.iterrows():
         hid, aid = int(row["home_team_api_id"]), int(row["away_team_api_id"])
-        hg,  ag  = int(row["home_team_goal"]),   int(row["away_team_goal"])
+        hg, ag = int(row["home_team_goal"]), int(row["away_team_goal"])
         for tid in [hid, aid]:
             if str(tid) not in comp.equipes:
-                comp.ajouter_equipe(str(tid), Equipe(teams.get(tid, str(tid)), "football", abbrevs.get(tid)))
+                comp.ajouter_equipe(
+                    str(tid),
+                    Equipe(teams.get(tid, str(tid)), "football", abbrevs.get(tid)),
+                )
         comp.equipes[str(hid)].ajouter_match(hg, ag)
         comp.equipes[str(aid)].ajouter_match(ag, hg)
 
@@ -198,12 +214,20 @@ def visualiser_football(
     largeurs = [0.04, 0.22, 0.06, 0.06, 0.06, 0.06, 0.07, 0.07, 0.08, 0.07]
     lignes = []
     for i, e in enumerate(cl, 1):
-        lignes.append([
-            str(i), e.nom,
-            str(e.matchs_joues), str(e.victoires), str(e.nuls), str(e.defaites),
-            str(int(e.score_pour)), str(int(e.score_contre)),
-            f"{e.difference_score:+.0f}", str(e.points),
-        ])
+        lignes.append(
+            [
+                str(i),
+                e.nom,
+                str(e.matchs_joues),
+                str(e.victoires),
+                str(e.nuls),
+                str(e.defaites),
+                str(int(e.score_pour)),
+                str(int(e.score_contre)),
+                f"{e.difference_score:+.0f}",
+                str(e.points),
+            ]
+        )
 
     legende = [
         (_ZONE_TOP, "Qualification européenne"),
@@ -211,12 +235,17 @@ def visualiser_football(
         (_ZONE_BOT, "Relégation"),
     ]
 
-    return _fig_classement(nom_comp, colonnes, lignes, zones, largeurs, legende, save_path)
+    return _fig_classement(
+        nom_comp, colonnes, lignes, zones, largeurs, legende, save_path
+    )
 
 
 # ── Basketball ────────────────────────────────────────────────────────────────
 
-def visualiser_basketball(season_type: str = "Regular Season", save_path: str | None = None) -> str:
+
+def visualiser_basketball(
+    season_type: str = "Regular Season", save_path: str | None = None
+) -> str:
     """Classement NBA par victoires avec stats avancées.
 
     Parameters
@@ -229,7 +258,7 @@ def visualiser_basketball(season_type: str = "Regular Season", save_path: str | 
     df_game = pd.read_csv("data/basketball/game.csv")
     df_team = pd.read_csv("data/basketball/team.csv")
 
-    teams   = {r["id"]: r["full_name"]    for _, r in df_team.iterrows()}
+    teams = {r["id"]: r["full_name"] for _, r in df_team.iterrows()}
     abbrevs = {r["id"]: r["abbreviation"] for _, r in df_team.iterrows()}
 
     df = df_game[df_game["season_type"] == season_type]
@@ -238,18 +267,22 @@ def visualiser_basketball(season_type: str = "Regular Season", save_path: str | 
 
     comp = Competition(f"NBA — {season_type}", "basketball")
     for _, row in df.iterrows():
-        hid, aid   = int(row["team_id_home"]), int(row["team_id_away"])
-        hpts, apts = int(row["pts_home"]),     int(row["pts_away"])
+        hid, aid = int(row["team_id_home"]), int(row["team_id_away"])
+        hpts, apts = int(row["pts_home"]), int(row["pts_away"])
         for tid in [hid, aid]:
             if str(tid) not in comp.equipes:
-                comp.ajouter_equipe(str(tid), Equipe(teams.get(tid, str(tid)), "basketball", abbrevs.get(tid)))
-        eh = comp.equipes[str(hid)]; ea = comp.equipes[str(aid)]
+                comp.ajouter_equipe(
+                    str(tid),
+                    Equipe(teams.get(tid, str(tid)), "basketball", abbrevs.get(tid)),
+                )
+        eh = comp.equipes[str(hid)]
+        ea = comp.equipes[str(aid)]
         eh.ajouter_match(hpts, apts, nul_possible=False)
         ea.ajouter_match(apts, hpts, nul_possible=False)
         eh.rebonds += float(row.get("reb_home") or 0)
-        eh.passes  += float(row.get("ast_home") or 0)
+        eh.passes += float(row.get("ast_home") or 0)
         ea.rebonds += float(row.get("reb_away") or 0)
-        ea.passes  += float(row.get("ast_away") or 0)
+        ea.passes += float(row.get("ast_away") or 0)
 
     _appliquer_nouveaux(comp, nul_possible=False)
     cl = comp.classement_par("victoires")
@@ -257,33 +290,57 @@ def visualiser_basketball(season_type: str = "Regular Season", save_path: str | 
 
     zones = {}
     if n >= 8:
-        zones[_ZONE_TOP] = list(range(8))      # 8 qualifiés playoffs (simulation)
+        zones[_ZONE_TOP] = list(range(8))  # 8 qualifiés playoffs (simulation)
     if n >= 10:
         zones[_ZONE_MID] = list(range(8, 10))  # play-in
 
-    colonnes = ["#", "Équipe", "Abrév.", "MJ", "V", "D", "Pts+", "Pts-", "Diff", "Reb/m", "Ast/m", "Win%"]
+    colonnes = [
+        "#",
+        "Équipe",
+        "Abrév.",
+        "MJ",
+        "V",
+        "D",
+        "Pts+",
+        "Pts-",
+        "Diff",
+        "Reb/m",
+        "Ast/m",
+        "Win%",
+    ]
     largeurs = [0.03, 0.18, 0.07, 0.05, 0.05, 0.05, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07]
     lignes = []
     for i, e in enumerate(cl, 1):
         mj = e.matchs_joues or 1
-        lignes.append([
-            str(i), e.nom, e.abreviation or "",
-            str(e.matchs_joues), str(e.victoires), str(e.defaites),
-            str(int(e.score_pour)), str(int(e.score_contre)),
-            f"{e.difference_score:+.0f}",
-            f"{e.rebonds / mj:.1f}", f"{e.passes / mj:.1f}",
-            f"{e.winrate:.1f}%",
-        ])
+        lignes.append(
+            [
+                str(i),
+                e.nom,
+                e.abreviation or "",
+                str(e.matchs_joues),
+                str(e.victoires),
+                str(e.defaites),
+                str(int(e.score_pour)),
+                str(int(e.score_contre)),
+                f"{e.difference_score:+.0f}",
+                f"{e.rebonds / mj:.1f}",
+                f"{e.passes / mj:.1f}",
+                f"{e.winrate:.1f}%",
+            ]
+        )
 
     legende = [
         (_ZONE_TOP, "Qualifié Playoffs"),
         (_ZONE_MID, "Play-in"),
     ]
 
-    return _fig_classement(comp.nom, colonnes, lignes, zones, largeurs, legende, save_path)
+    return _fig_classement(
+        comp.nom, colonnes, lignes, zones, largeurs, legende, save_path
+    )
 
 
 # ── League of Legends ─────────────────────────────────────────────────────────
+
 
 def visualiser_lol(save_path: str | None = None) -> str:
     """Classement LoL EMEA avec stats d'objectifs.
@@ -293,8 +350,8 @@ def visualiser_lol(save_path: str | None = None) -> str:
     save_path : str | None
         Chemin de sortie.
     """
-    df       = pd.read_csv("data/LOL/match.csv")
-    df_team  = pd.read_csv("data/LOL/team.csv")
+    df = pd.read_csv("data/LOL/match.csv")
+    df_team = pd.read_csv("data/LOL/team.csv")
 
     teams_info = {r["team_abbreviation"]: r["team"] for _, r in df_team.iterrows()}
 
@@ -303,18 +360,20 @@ def visualiser_lol(save_path: str | None = None) -> str:
         for side, opp in [("blue", "red"), ("red", "blue")]:
             abrev = str(row[f"team_{side}"])
             if abrev not in comp.equipes:
-                comp.ajouter_equipe(abrev, Equipe(teams_info.get(abrev, abrev), "LOL", abrev))
+                comp.ajouter_equipe(
+                    abrev, Equipe(teams_info.get(abrev, abrev), "LOL", abrev)
+                )
             e = comp.equipes[abrev]
             e.matchs_joues += 1
-            e.kills   += int(row.get(f"kills_team_{side}")  or 0)
+            e.kills += int(row.get(f"kills_team_{side}") or 0)
             e.dragons += int(row.get(f"dragons_team_{side}") or 0)
-            e.barons  += int(row.get(f"barons_team_{side}")  or 0)
-            e.gold    += float(row.get(f"gold_team_{side}")  or 0)
-            e.score_pour    += int(row.get(f"kills_team_{side}") or 0)
-            e.score_contre  += int(row.get(f"kills_team_{opp}")  or 0)
+            e.barons += int(row.get(f"barons_team_{side}") or 0)
+            e.gold += float(row.get(f"gold_team_{side}") or 0)
+            e.score_pour += int(row.get(f"kills_team_{side}") or 0)
+            e.score_contre += int(row.get(f"kills_team_{opp}") or 0)
             if str(row["winner"]) == abrev:
                 e.victoires += 1
-                e.points    += 1
+                e.points += 1
             else:
                 e.defaites += 1
 
@@ -328,32 +387,55 @@ def visualiser_lol(save_path: str | None = None) -> str:
     if n >= 2:
         zones[_ZONE_BOT] = [n - 1, n - 2] if n >= 4 else [n - 1]
 
-    colonnes = ["#", "Équipe", "Abrév.", "MJ", "V", "D", "Win%", "Kills/m", "Dragons/m", "Barons/m", "Gold/m"]
+    colonnes = [
+        "#",
+        "Équipe",
+        "Abrév.",
+        "MJ",
+        "V",
+        "D",
+        "Win%",
+        "Kills/m",
+        "Dragons/m",
+        "Barons/m",
+        "Gold/m",
+    ]
     largeurs = [0.04, 0.18, 0.07, 0.05, 0.05, 0.05, 0.07, 0.08, 0.10, 0.09, 0.09]
     lignes = []
     for i, e in enumerate(cl, 1):
         mj = e.matchs_joues or 1
-        lignes.append([
-            str(i), e.nom, e.abreviation or "",
-            str(e.matchs_joues), str(e.victoires), str(e.defaites),
-            f"{e.winrate:.1f}%",
-            f"{e.kills / mj:.1f}",
-            f"{e.dragons / mj:.1f}",
-            f"{e.barons / mj:.1f}",
-            f"{e.gold / mj:.0f}",
-        ])
+        lignes.append(
+            [
+                str(i),
+                e.nom,
+                e.abreviation or "",
+                str(e.matchs_joues),
+                str(e.victoires),
+                str(e.defaites),
+                f"{e.winrate:.1f}%",
+                f"{e.kills / mj:.1f}",
+                f"{e.dragons / mj:.1f}",
+                f"{e.barons / mj:.1f}",
+                f"{e.gold / mj:.0f}",
+            ]
+        )
 
     legende = [
         (_ZONE_TOP, "Playoffs"),
         (_ZONE_BOT, "Relégation"),
     ]
 
-    return _fig_classement(comp.nom, colonnes, lignes, zones, largeurs, legende, save_path)
+    return _fig_classement(
+        comp.nom, colonnes, lignes, zones, largeurs, legende, save_path
+    )
 
 
 # ── Tennis ────────────────────────────────────────────────────────────────────
 
-def visualiser_tennis(circuit: str = "ATP", tournoi: str | None = None, save_path: str | None = None) -> str:
+
+def visualiser_tennis(
+    circuit: str = "ATP", tournoi: str | None = None, save_path: str | None = None
+) -> str:
     """Classement tennis par victoires.
 
     Parameters
@@ -375,8 +457,10 @@ def visualiser_tennis(circuit: str = "ATP", tournoi: str | None = None, save_pat
     else:
         raise ValueError(f"Circuit inconnu : {circuit}")
 
-    players = {str(int(r["player_id"])): r["name_first"] + " " + r["name_last"]
-               for _, r in df_p.iterrows()}
+    players = {
+        str(int(r["player_id"])): r["name_first"] + " " + r["name_last"]
+        for _, r in df_p.iterrows()
+    }
 
     nom_comp = f"{circuit} 2024"
     if tournoi:
@@ -407,17 +491,25 @@ def visualiser_tennis(circuit: str = "ATP", tournoi: str | None = None, save_pat
     largeurs = [0.05, 0.40, 0.10, 0.10, 0.10, 0.12]
     lignes = []
     for i, e in enumerate(cl, 1):
-        lignes.append([
-            str(i), e.nom,
-            str(e.matchs_joues), str(e.victoires), str(e.defaites),
-            f"{e.winrate:.1f}%",
-        ])
+        lignes.append(
+            [
+                str(i),
+                e.nom,
+                str(e.matchs_joues),
+                str(e.victoires),
+                str(e.defaites),
+                f"{e.winrate:.1f}%",
+            ]
+        )
 
     legende = [(_ZONE_TOP, "Top 3")]
-    return _fig_classement(nom_comp, colonnes, lignes, zones, largeurs, legende, save_path)
+    return _fig_classement(
+        nom_comp, colonnes, lignes, zones, largeurs, legende, save_path
+    )
 
 
 # ── Volleyball ────────────────────────────────────────────────────────────────
+
 
 def visualiser_volley(genre: str = "Hommes", save_path: str | None = None) -> str:
     """Classement volleyball JO 2024.
@@ -450,7 +542,9 @@ def visualiser_volley(genre: str = "Hommes", save_path: str | None = None) -> st
         s1, s2 = int(row["set_country_1"]), int(row["set_country_2"])
         for code in [c1, c2]:
             if code not in comp.equipes:
-                comp.ajouter_equipe(code, Equipe(countries.get(code, code), "volley", code))
+                comp.ajouter_equipe(
+                    code, Equipe(countries.get(code, code), "volley", code)
+                )
         comp.equipes[c1].ajouter_match(s1, s2, nul_possible=False)
         comp.equipes[c2].ajouter_match(s2, s1, nul_possible=False)
 
@@ -468,28 +562,41 @@ def visualiser_volley(genre: str = "Hommes", save_path: str | None = None) -> st
     largeurs = [0.04, 0.22, 0.07, 0.06, 0.06, 0.06, 0.08, 0.08, 0.08, 0.08]
     lignes = []
     for i, e in enumerate(cl, 1):
-        lignes.append([
-            str(i), e.nom, e.abreviation or "",
-            str(e.matchs_joues), str(e.victoires), str(e.defaites),
-            str(int(e.score_pour)), str(int(e.score_contre)),
-            f"{e.difference_score:+.0f}", f"{e.winrate:.1f}%",
-        ])
+        lignes.append(
+            [
+                str(i),
+                e.nom,
+                e.abreviation or "",
+                str(e.matchs_joues),
+                str(e.victoires),
+                str(e.defaites),
+                str(int(e.score_pour)),
+                str(int(e.score_contre)),
+                f"{e.difference_score:+.0f}",
+                f"{e.winrate:.1f}%",
+            ]
+        )
 
     legende = [
         (_ZONE_TOP, "Demi-finales"),
         (_ZONE_BOT, "Dernière place"),
     ]
-    return _fig_classement(nom_comp, colonnes, lignes, zones, largeurs, legende, save_path)
+    return _fig_classement(
+        nom_comp, colonnes, lignes, zones, largeurs, legende, save_path
+    )
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def _appliquer_nouveaux(comp: Competition, nul_possible: bool) -> None:
     from src.loader.GestionResultats import GestionResultats
+
     GestionResultats.appliquer_a_competition(comp, nul_possible=nul_possible)
 
 
 # ── Menu interactif ───────────────────────────────────────────────────────────
+
 
 def run_menu(sport_nom: str) -> None:
     """Point d'entrée du visualiseur pour un sport donné.
@@ -516,12 +623,12 @@ def run_menu(sport_nom: str) -> None:
 
 
 def _menu_football() -> None:
-    df_match  = pd.read_csv("data/football/match.csv")
+    df_match = pd.read_csv("data/football/match.csv")
     df_league = pd.read_csv("data/football/league.csv")
     df_country = pd.read_csv("data/football/country.csv")
 
-    leagues  = {r["id"]: r["name"] for _, r in df_league.iterrows()}
-    lg_ctry  = {r["id"]: r["country_id"] for _, r in df_league.iterrows()}
+    leagues = {r["id"]: r["name"] for _, r in df_league.iterrows()}
+    lg_ctry = {r["id"]: r["country_id"] for _, r in df_league.iterrows()}
     countries = {r["id"]: r["name"] for _, r in df_country.iterrows()}
 
     print("\n  Ligues disponibles :")

@@ -42,22 +42,22 @@ class Match:
 
     def __init__(
         self,
-        date:         str,
-        equipe_1:     str,
-        equipe_2:     str,
-        score_1:      float,
-        score_2:      float,
-        sport:        str,
-        season:       str | None = None,
-        season_type:  str | None = None,
-        league_id:    float | None = None,
-        stage:        str | None = None,
-        patch:        str | None = None,
-        week:         int | None = None,
-        winner:       str | None = None,
+        date: str,
+        equipe_1: str,
+        equipe_2: str,
+        score_1: float,
+        score_2: float,
+        sport: str,
+        season: str | None = None,
+        season_type: str | None = None,
+        league_id: float | None = None,
+        stage: str | None = None,
+        patch: str | None = None,
+        week: int | None = None,
+        winner: str | None = None,
         tourney_name: str | None = None,
-        surface:      str | None = None,
-        round:        str | None = None,
+        surface: str | None = None,
+        round: str | None = None,
     ):
         self.date = date
         self.equipe_1 = equipe_1
@@ -77,8 +77,10 @@ class Match:
         self.round = round
 
     def __str__(self):
-        return (f"[{self.sport}] {self.date} | "
-                f"{self.equipe_1} {self.score_1} - {self.score_2} {self.equipe_2}")
+        return (
+            f"[{self.sport}] {self.date} | "
+            f"{self.equipe_1} {self.score_1} - {self.score_2} {self.equipe_2}"
+        )
 
     @staticmethod
     def run_menu(sport: Sport) -> None:
@@ -93,6 +95,7 @@ class Match:
             Sport sélectionné par l'utilisateur.
         """
         from src.loader.MatchLoader import MatchLoader
+
         matchs = MatchLoader().load_all_matches(sport)
         print(f"  {len(matchs)} matchs chargés pour {sport.nom}.")
 
@@ -132,8 +135,12 @@ class Match:
             Liste de Match à filtrer.
         """
         equipe = input("  Nom de l'équipe : ").strip()
-        resultats = [m for m in matchs if equipe.lower() in m.equipe_1.lower()
-                     or equipe.lower() in m.equipe_2.lower()]
+        resultats = [
+            m
+            for m in matchs
+            if equipe.lower() in m.equipe_1.lower()
+            or equipe.lower() in m.equipe_2.lower()
+        ]
         Match._afficher(resultats)
 
     @staticmethod
@@ -147,11 +154,18 @@ class Match:
         """
         equipe1 = input("  Équipe 1 : ").strip()
         equipe2 = input("  Équipe 2 : ").strip()
-        resultats = [m for m in matchs if
-                     (equipe1.lower() in m.equipe_1.lower() and
-                      equipe2.lower() in m.equipe_2.lower()) or
-                     (equipe2.lower() in m.equipe_1.lower() and
-                      equipe1.lower() in m.equipe_2.lower())]
+        resultats = [
+            m
+            for m in matchs
+            if (
+                equipe1.lower() in m.equipe_1.lower()
+                and equipe2.lower() in m.equipe_2.lower()
+            )
+            or (
+                equipe2.lower() in m.equipe_1.lower()
+                and equipe1.lower() in m.equipe_2.lower()
+            )
+        ]
         Match._afficher(resultats)
 
     @staticmethod
@@ -202,10 +216,16 @@ class Match:
             print("  Aucun match disponible.")
             return
 
-        equipe_filtre = input("  Filtrer sur une équipe ? (laisser vide = tous) : ").strip()
+        equipe_filtre = input(
+            "  Filtrer sur une équipe ? (laisser vide = tous) : "
+        ).strip()
         if equipe_filtre:
-            matchs_filtres = [m for m in matchs if equipe_filtre.lower() in m.equipe_1.lower()
-                              or equipe_filtre.lower() in m.equipe_2.lower()]
+            matchs_filtres = [
+                m
+                for m in matchs
+                if equipe_filtre.lower() in m.equipe_1.lower()
+                or equipe_filtre.lower() in m.equipe_2.lower()
+            ]
             if not matchs_filtres:
                 print(f"  Aucun match trouvé pour « {equipe_filtre} ».")
                 return
@@ -217,7 +237,9 @@ class Match:
 
         match_record = matchs_filtres[0]
         for m in matchs_filtres[1:]:
-            if (m.score_1 or 0) + (m.score_2 or 0) > (match_record.score_1 or 0) + (match_record.score_2 or 0):
+            if (m.score_1 or 0) + (m.score_2 or 0) > (match_record.score_1 or 0) + (
+                match_record.score_2 or 0
+            ):
                 match_record = m
 
         print(f"\n  === Statistiques des matchs — {titre} ===\n")
@@ -245,8 +267,10 @@ class Match:
                 else:
                     nuls += 1
 
-            moy_m = sum(points_marques)   / len(points_marques)   if points_marques   else 0
-            moy_e = sum(points_encaisses) / len(points_encaisses) if points_encaisses else 0
+            moy_m = sum(points_marques) / len(points_marques) if points_marques else 0
+            moy_e = (
+                sum(points_encaisses) / len(points_encaisses) if points_encaisses else 0
+            )
 
             print(f"  Victoires : {victoires}")
             print(f"  Défaites  : {defaites}")
@@ -270,4 +294,6 @@ class Match:
         for m in resultats[:limite]:
             print(f"  {m}")
         if len(resultats) > limite:
-            print(f"  ... ({len(resultats) - limite} résultats supplémentaires non affichés)")
+            print(
+                f"  ... ({len(resultats) - limite} résultats supplémentaires non affichés)"
+            )

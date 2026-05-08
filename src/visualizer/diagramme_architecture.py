@@ -1,6 +1,7 @@
 """Génère le diagramme d'architecture de l'application sous forme de PNG."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -8,61 +9,124 @@ from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import os
 
 # ── Palette ────────────────────────────────────────────────────────────────────
-C_CLI      = "#1a1a2e"   # bleu nuit — interface
-C_MODEL    = "#16213e"   # bleu foncé — modèles
-C_LOADER   = "#0f3460"   # bleu moyen — loaders
-C_VIZ      = "#533483"   # violet — visualiseur
-C_ANALYSIS = "#2d6a4f"   # vert — analyse
-C_DATA     = "#b5451b"   # rouille — données
-C_SPORT    = "#e94560"   # rouge — sport dispatcher
+C_CLI = "#1a1a2e"  # bleu nuit — interface
+C_MODEL = "#16213e"  # bleu foncé — modèles
+C_LOADER = "#0f3460"  # bleu moyen — loaders
+C_VIZ = "#533483"  # violet — visualiseur
+C_ANALYSIS = "#2d6a4f"  # vert — analyse
+C_DATA = "#b5451b"  # rouille — données
+C_SPORT = "#e94560"  # rouge — sport dispatcher
 
-FG         = "#ffffff"
-ARROW_COL  = "#555555"
-BG         = "#f4f4f8"
+FG = "#ffffff"
+ARROW_COL = "#555555"
+BG = "#f4f4f8"
+
 
 def box(ax, x, y, w, h, label, sublabel=None, color=C_MODEL, fontsize=10, radius=0.012):
     """Dessine une boîte arrondie avec titre et sous-titre optionnel."""
     rect = FancyBboxPatch(
-        (x - w / 2, y - h / 2), w, h,
+        (x - w / 2, y - h / 2),
+        w,
+        h,
         boxstyle=f"round,pad=0.01,rounding_size={radius}",
-        linewidth=1.4, edgecolor="#333333",
-        facecolor=color, zorder=3,
+        linewidth=1.4,
+        edgecolor="#333333",
+        facecolor=color,
+        zorder=3,
     )
     ax.add_patch(rect)
     ty = y + (h * 0.12 if sublabel else 0)
-    ax.text(x, ty, label, ha="center", va="center",
-            fontsize=fontsize, fontweight="bold", color=FG, zorder=4)
+    ax.text(
+        x,
+        ty,
+        label,
+        ha="center",
+        va="center",
+        fontsize=fontsize,
+        fontweight="bold",
+        color=FG,
+        zorder=4,
+    )
     if sublabel:
-        ax.text(x, y - h * 0.22, sublabel, ha="center", va="center",
-                fontsize=7.5, color="#cccccc", zorder=4, style="italic")
+        ax.text(
+            x,
+            y - h * 0.22,
+            sublabel,
+            ha="center",
+            va="center",
+            fontsize=7.5,
+            color="#cccccc",
+            zorder=4,
+            style="italic",
+        )
+
 
 def arrow(ax, x1, y1, x2, y2, label="", bidirectional=False):
     """Dessine une flèche entre deux points."""
     style = "<->" if bidirectional else "->"
-    ax.annotate("", xy=(x2, y2), xytext=(x1, y1),
-                 arrowprops=dict(arrowstyle=style, color=ARROW_COL,
-                                 lw=1.5, connectionstyle="arc3,rad=0.0"),
-                 zorder=2)
+    ax.annotate(
+        "",
+        xy=(x2, y2),
+        xytext=(x1, y1),
+        arrowprops=dict(
+            arrowstyle=style, color=ARROW_COL, lw=1.5, connectionstyle="arc3,rad=0.0"
+        ),
+        zorder=2,
+    )
     if label:
         mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-        ax.text(mx + 0.01, my, label, ha="left", va="center",
-                fontsize=7, color=ARROW_COL, zorder=5)
+        ax.text(
+            mx + 0.01,
+            my,
+            label,
+            ha="left",
+            va="center",
+            fontsize=7,
+            color=ARROW_COL,
+            zorder=5,
+        )
+
 
 def dashed_arrow(ax, x1, y1, x2, y2, label=""):
-    ax.annotate("", xy=(x2, y2), xytext=(x1, y1),
-                 arrowprops=dict(arrowstyle="->", color=ARROW_COL,
-                                 lw=1.2, linestyle="dashed",
-                                 connectionstyle="arc3,rad=0.0"),
-                 zorder=2)
+    ax.annotate(
+        "",
+        xy=(x2, y2),
+        xytext=(x1, y1),
+        arrowprops=dict(
+            arrowstyle="->",
+            color=ARROW_COL,
+            lw=1.2,
+            linestyle="dashed",
+            connectionstyle="arc3,rad=0.0",
+        ),
+        zorder=2,
+    )
     if label:
         mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-        ax.text(mx + 0.01, my, label, ha="left", va="center",
-                fontsize=7, color=ARROW_COL, zorder=5)
+        ax.text(
+            mx + 0.01,
+            my,
+            label,
+            ha="left",
+            va="center",
+            fontsize=7,
+            color=ARROW_COL,
+            zorder=5,
+        )
+
 
 def separator(ax, y, label, x0=0.01, x1=0.99):
     ax.axhline(y=y, xmin=x0, xmax=x1, color="#cccccc", lw=0.8, linestyle="--", zorder=1)
-    ax.text(0.995, y + 0.005, label, ha="right", va="bottom",
-            fontsize=7, color="#999999", fontstyle="italic")
+    ax.text(
+        0.995,
+        y + 0.005,
+        label,
+        ha="right",
+        va="bottom",
+        fontsize=7,
+        color="#999999",
+        fontstyle="italic",
+    )
 
 
 fig, ax = plt.subplots(figsize=(18, 13))
@@ -73,20 +137,53 @@ fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
 
 # ── Titre ─────────────────────────────────────────────────────────────────────
-ax.text(0.5, 0.965, "Architecture — Application Sportive",
-        ha="center", va="center", fontsize=17, fontweight="bold", color=C_CLI)
-ax.text(0.5, 0.945, "Résultats & Statistiques  |  Football · Basketball · LoL · Tennis · Volleyball",
-        ha="center", va="center", fontsize=9, color="#555555")
+ax.text(
+    0.5,
+    0.965,
+    "Architecture — Application Sportive",
+    ha="center",
+    va="center",
+    fontsize=17,
+    fontweight="bold",
+    color=C_CLI,
+)
+ax.text(
+    0.5,
+    0.945,
+    "Résultats & Statistiques  |  Football · Basketball · LoL · Tennis · Volleyball",
+    ha="center",
+    va="center",
+    fontsize=9,
+    color="#555555",
+)
 
 # ── Couche 1 : Interface CLI ───────────────────────────────────────────────────
 separator(ax, 0.91, "COUCHE INTERFACE")
-box(ax, 0.5, 0.875, 0.30, 0.055, "__main__.py",
-    "Boucle principale · menu sport · menu catégorie", color=C_CLI, fontsize=11)
+box(
+    ax,
+    0.5,
+    0.875,
+    0.30,
+    0.055,
+    "__main__.py",
+    "Boucle principale · menu sport · menu catégorie",
+    color=C_CLI,
+    fontsize=11,
+)
 
 # ── Couche 2 : Sport ──────────────────────────────────────────────────────────
 separator(ax, 0.825, "COUCHE DOMAINE")
-box(ax, 0.5, 0.795, 0.18, 0.045, "Sport",
-    "Identifiant du sport", color=C_SPORT, fontsize=10)
+box(
+    ax,
+    0.5,
+    0.795,
+    0.18,
+    0.045,
+    "Sport",
+    "Identifiant du sport",
+    color=C_SPORT,
+    fontsize=10,
+)
 
 # ── Couche 3 : Modèles ────────────────────────────────────────────────────────
 separator(ax, 0.755, "COUCHE MODÈLE")
@@ -106,10 +203,17 @@ arrow(ax, 0.22, 0.700, 0.24, 0.700, "contient →")
 separator(ax, 0.645, "COUCHE LOADER / DISPATCHER")
 
 # Dispatcher central
-box(ax, 0.50, 0.608, 0.28, 0.055,
+box(
+    ax,
+    0.50,
+    0.608,
+    0.28,
+    0.055,
     "CompetitionLoader  |  EquipeLoader",
     "MatchLoader  |  JoueurLoader  |  GestionResultats",
-    color=C_LOADER, fontsize=9)
+    color=C_LOADER,
+    fontsize=9,
+)
 
 # Loaders sport-spécifiques
 sports_loaders = [
@@ -127,25 +231,39 @@ for xs, lbl in sports_loaders:
 
 # ── Couche 5 : Visualiseur & Analyse ─────────────────────────────────────────
 separator(ax, 0.480, "COUCHE VISUALISATION & ANALYSE")
-box(ax, 0.25, 0.437, 0.35, 0.060,
+box(
+    ax,
+    0.25,
+    0.437,
+    0.35,
+    0.060,
     "ClassementVisualizer",
     "football · basketball · LoL · tennis · volley\n→ génère output/classement_*.png",
-    color=C_VIZ, fontsize=9.5)
+    color=C_VIZ,
+    fontsize=9.5,
+)
 
-box(ax, 0.72, 0.437, 0.30, 0.060,
+box(
+    ax,
+    0.72,
+    0.437,
+    0.30,
+    0.060,
     "Analysis",
     "homemade/  ·  pandas/\nGoatFinder, statistiques avancées",
-    color=C_ANALYSIS, fontsize=9.5)
+    color=C_ANALYSIS,
+    fontsize=9.5,
+)
 
 # ── Couche 6 : Données CSV ────────────────────────────────────────────────────
 separator(ax, 0.380, "COUCHE DONNÉES (CSV)")
 data_files = [
-    (0.09,  "football/",   "match · team\nleague · country"),
-    (0.25,  "basketball/", "game · team\nplayer"),
-    (0.41,  "LOL/",        "match · team\nplayer · coach"),
-    (0.59,  "tennis/",     "atp/wta matches\natp/wta players"),
-    (0.75,  "volley/",     "match_men/women\ncountry · player"),
-    (0.91,  "resultats/",  "nouveaux_matchs.csv\n(ajouts manuels)"),
+    (0.09, "football/", "match · team\nleague · country"),
+    (0.25, "basketball/", "game · team\nplayer"),
+    (0.41, "LOL/", "match · team\nplayer · coach"),
+    (0.59, "tennis/", "atp/wta matches\natp/wta players"),
+    (0.75, "volley/", "match_men/women\ncountry · player"),
+    (0.91, "resultats/", "nouveaux_matchs.csv\n(ajouts manuels)"),
 ]
 for xd, nom, sub in data_files:
     c = C_DATA if "resultats" in nom else "#8b3a0f"
@@ -153,14 +271,28 @@ for xd, nom, sub in data_files:
 
 # ── Couche 7 : Sorties ────────────────────────────────────────────────────────
 separator(ax, 0.220, "SORTIES")
-box(ax, 0.25, 0.170, 0.28, 0.060,
+box(
+    ax,
+    0.25,
+    0.170,
+    0.28,
+    0.060,
     "Terminal (stdout)",
     "classements ASCII · stats · historique\nrecherches joueurs / matchs",
-    color="#444444", fontsize=9)
-box(ax, 0.70, 0.170, 0.28, 0.060,
+    color="#444444",
+    fontsize=9,
+)
+box(
+    ax,
+    0.70,
+    0.170,
+    0.28,
+    0.060,
     "output/*.png",
     "tableaux de classement stylisés\npar sport et compétition",
-    color=C_VIZ, fontsize=9)
+    color=C_VIZ,
+    fontsize=9,
+)
 
 # ── Flèches verticales principales ───────────────────────────────────────────
 # CLI → Sport
@@ -188,18 +320,27 @@ dashed_arrow(ax, 0.91, 0.506, 0.91, 0.348, "write CSV")
 
 # ── Légende ───────────────────────────────────────────────────────────────────
 legend_items = [
-    (C_CLI,      "Interface / Point d'entrée"),
-    (C_SPORT,    "Couche domaine (Sport)"),
-    (C_MODEL,    "Modèles métier"),
-    (C_LOADER,   "Loaders / Dispatchers"),
-    (C_VIZ,      "Visualiseur"),
+    (C_CLI, "Interface / Point d'entrée"),
+    (C_SPORT, "Couche domaine (Sport)"),
+    (C_MODEL, "Modèles métier"),
+    (C_LOADER, "Loaders / Dispatchers"),
+    (C_VIZ, "Visualiseur"),
     (C_ANALYSIS, "Analyse"),
-    (C_DATA,     "Données CSV"),
+    (C_DATA, "Données CSV"),
 ]
-handles = [mpatches.Patch(facecolor=c, edgecolor="#333", label=l) for c, l in legend_items]
-ax.legend(handles=handles, loc="lower center", ncol=len(legend_items),
-          fontsize=8, frameon=True, edgecolor="#cccccc", facecolor=BG,
-          bbox_to_anchor=(0.5, 0.005))
+handles = [
+    mpatches.Patch(facecolor=c, edgecolor="#333", label=l) for c, l in legend_items
+]
+ax.legend(
+    handles=handles,
+    loc="lower center",
+    ncol=len(legend_items),
+    fontsize=8,
+    frameon=True,
+    edgecolor="#cccccc",
+    facecolor=BG,
+    bbox_to_anchor=(0.5, 0.005),
+)
 
 plt.tight_layout(pad=0.3)
 
