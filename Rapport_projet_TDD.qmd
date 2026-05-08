@@ -342,6 +342,57 @@ Néanmoins, beaucoup des fonctionnalités ne sont pas couvertes. Les Loaders et 
 
 # III - Les résultats
 
+Etude 1 :
+
+L'utilisateur est l'entraineur du Paris Saint-Germain, il souhaite préparer son match de vendredi face à l'Olympique de Marseille.
+Il effectue alors des recherches statistiques sur l'équipe.
+
+![Premières actions, choisir la catégorie équipe et le nom de celle-ci](photo 1.png){fig-align="center" width="80%"}
+
+![Seconde action, choisir la période + Résultat](Photo 2.png){fig-align="center" width="80%"}
+
+Il décide ensuite de comparer les deux équipes.
+
+![Première action, choix de la catégorie graphique + choix des deux équipes](Photo 3.png){fig-align="center" width="80%"}
+
+![Résultat](Photo 4.png){fig-align="center" width="80%"}
+
+Etude 2 :
+
+L'utilisateur, un montpelliérain, est nostalgique de la saison 2011/2012.
+
+![Première action, choix de la catégorie compétition](Photo 5.png){fig-align="center" width="80%"}
+
+![Deuxième action, choix de la ligue et de l'année](6.png){fig-align="center" width="80%"}
+
+![Résultat](7.png){fig-align="center" width="80%"}
+
+Etude 3 :
+
+Un fan de basket entend parler d'un Jonathan Isaac. Mais il ne le connaît pas, il décide alors de lancer une requête pour avoir des informations sur lui.
+
+![Première action, choix de la catégorie](8.png){fig-align="center" width="80%"}
+
+![Seconde action, cherche le joueur précis + résultat](9.png){fig-align="center" width="80%"}
+
+Etude 4 :
+
+Deux amis débattent sur la meilleure équipe entre les Lakers et les Celtics. Ils décident alors de regarder les deux derniers matchs les opposant.
+
+![Première action, choix de la catégorie](10.png){fig-align="center" width="80%"}
+
+![Deuxième action, choxi des équipes + résultat](11.png){fig-align="center" width="80%"}
+
+Etude 5 :
+
+Une étude est menée par l'INSEE par rapport à la domination de certaines nationalités au tennis. Les chercheurs souhaitent connaître les nationalités des joueurs pro de tennis.
+
+![Première action, choix de la catégorie](12.png){fig-align="center" width="80%"}
+
+![Seconde action, choix du graphique](13.png){fig-align="center" width="80%"}
+
+![Résultat 1](14.png){fig-align="center" width="80%"}
+
 # Conclusion
 
 \newpage
