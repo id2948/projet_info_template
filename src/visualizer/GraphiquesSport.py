@@ -409,43 +409,6 @@ def graph_lol_gold_winrate() -> str:
     return _save(fig, "lol_gold_winrate")
 
 
-def graph_lol_classement() -> str:
-    """Classement général LoL — barres horizontales par victoires."""
-    df, teams_info, _ = _charger_lol()
-
-    victoires: dict = {}
-    mj: dict = {}
-    for _, row in df.iterrows():
-        for side in ["blue", "red"]:
-            abrev = str(row[f"team_{side}"])
-            victoires[abrev] = victoires.get(abrev, 0) + (
-                1 if str(row["winner"]) == abrev else 0
-            )
-            mj[abrev] = mj.get(abrev, 0) + 1
-
-    data = sorted(
-        [(teams_info.get(e, e), victoires[e], mj[e]) for e in victoires],
-        key=lambda x: x[1],
-        reverse=True,
-    )
-    noms = [d[0] for d in data]
-    vals = [d[1] for d in data]
-    colors = (
-        [PALETTE[2]] * min(4, len(noms))
-        + [PALETTE[0]] * max(0, len(noms) - 6)
-        + [PALETTE[1]] * 2
-    )
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.barh(noms[::-1], vals[::-1], color=colors[::-1], edgecolor="white")
-    _style(ax, "Classement LoL EMEA 2025", "Victoires", "")
-    ax.grid(axis="x", alpha=0.3, linestyle="--")
-    ax.grid(axis="y", alpha=0)
-    for i, v in enumerate(vals[::-1]):
-        ax.text(v + 0.1, i, str(v), va="center", fontsize=9)
-    return _save(fig, "lol_classement")
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # TENNIS
 # ══════════════════════════════════════════════════════════════════════════════

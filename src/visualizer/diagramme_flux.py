@@ -1,4 +1,4 @@
-"""Diagramme de flux de l'application — style flowchart blanc (ref. capture)."""
+"""Diagramme de flux de l'application"""
 
 import matplotlib
 
