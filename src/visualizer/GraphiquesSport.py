@@ -1,4 +1,3 @@
-"""Graphiques statistiques pour chaque sport — niveau 1A ENSAI."""
 
 import matplotlib
 matplotlib.use("Agg")

@@ -82,7 +82,7 @@ class Joueur:
     def run_menu(sport: Sport) -> None:
         """Affiche le menu interactif des joueurs pour un sport donné.
 
-        Charge tous les joueurs une seule fois, puis boucle sur les requêtes
+        Charge tous les joueurs une seule fois , puis boucle sur les requêtes
         jusqu'à ce que l'utilisateur choisisse de revenir.
 
         Parameters
