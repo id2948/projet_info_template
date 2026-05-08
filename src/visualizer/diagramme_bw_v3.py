@@ -1,6 +1,7 @@
 """Diagramme BW vertical lisible — 7 branches dans une seule section."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Polygon
@@ -13,65 +14,148 @@ LW = 1.0
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+
 def box(ax, cx, cy, w, h, texte, fs=7.5, bold=False, dash=False):
     ls = (0, (4, 3)) if dash else "-"
-    ax.add_patch(FancyBboxPatch(
-        (cx - w/2, cy - h/2), w, h,
-        boxstyle="round,pad=0.04,rounding_size=0.09",
-        facecolor="#FFFFFF", edgecolor="#111111",
-        linewidth=LW, linestyle=ls, zorder=3,
-    ))
+    ax.add_patch(
+        FancyBboxPatch(
+            (cx - w / 2, cy - h / 2),
+            w,
+            h,
+            boxstyle="round,pad=0.04,rounding_size=0.09",
+            facecolor="#FFFFFF",
+            edgecolor="#111111",
+            linewidth=LW,
+            linestyle=ls,
+            zorder=3,
+        )
+    )
     fw = "bold" if bold else "normal"
-    ax.text(cx, cy, texte, ha="center", va="center",
-            fontsize=fs, color="#111111", fontweight=fw,
-            zorder=4, linespacing=1.30)
+    ax.text(
+        cx,
+        cy,
+        texte,
+        ha="center",
+        va="center",
+        fontsize=fs,
+        color="#111111",
+        fontweight=fw,
+        zorder=4,
+        linespacing=1.30,
+    )
+
 
 def box_filled(ax, cx, cy, w, h, texte, fs=8.5):
-    ax.add_patch(FancyBboxPatch(
-        (cx - w/2, cy - h/2), w, h,
-        boxstyle="round,pad=0.04,rounding_size=0.09",
-        facecolor="#1a1a1a", edgecolor="#111111",
-        linewidth=LW, zorder=3,
-    ))
-    ax.text(cx, cy, texte, ha="center", va="center",
-            fontsize=fs, color="#FFFFFF", fontweight="bold",
-            zorder=4, linespacing=1.30)
+    ax.add_patch(
+        FancyBboxPatch(
+            (cx - w / 2, cy - h / 2),
+            w,
+            h,
+            boxstyle="round,pad=0.04,rounding_size=0.09",
+            facecolor="#1a1a1a",
+            edgecolor="#111111",
+            linewidth=LW,
+            zorder=3,
+        )
+    )
+    ax.text(
+        cx,
+        cy,
+        texte,
+        ha="center",
+        va="center",
+        fontsize=fs,
+        color="#FFFFFF",
+        fontweight="bold",
+        zorder=4,
+        linespacing=1.30,
+    )
+
 
 def diamond(ax, cx, cy, w=0.42, h=0.28):
-    pts = np.array([[cx, cy+h], [cx+w, cy], [cx, cy-h], [cx-w, cy]])
-    ax.add_patch(Polygon(pts, closed=True,
-                         facecolor="#FFFFFF", edgecolor="#111111",
-                         linewidth=LW, zorder=3))
+    pts = np.array([[cx, cy + h], [cx + w, cy], [cx, cy - h], [cx - w, cy]])
+    ax.add_patch(
+        Polygon(
+            pts,
+            closed=True,
+            facecolor="#FFFFFF",
+            edgecolor="#111111",
+            linewidth=LW,
+            zorder=3,
+        )
+    )
+
 
 def oval(ax, cx, cy, w, h, texte, fs=8.5):
-    ax.add_patch(mpatches.Ellipse((cx, cy), w, h,
-        facecolor="#FFFFFF", edgecolor="#111111", linewidth=LW, zorder=3))
-    ax.text(cx, cy, texte, ha="center", va="center",
-            fontsize=fs, color="#111111", fontweight="bold", zorder=4)
+    ax.add_patch(
+        mpatches.Ellipse(
+            (cx, cy),
+            w,
+            h,
+            facecolor="#FFFFFF",
+            edgecolor="#111111",
+            linewidth=LW,
+            zorder=3,
+        )
+    )
+    ax.text(
+        cx,
+        cy,
+        texte,
+        ha="center",
+        va="center",
+        fontsize=fs,
+        color="#111111",
+        fontweight="bold",
+        zorder=4,
+    )
+
 
 def arr(ax, x1, y1, x2, y2, rad=0.0, lw=LW):
-    ax.annotate("", xy=(x2, y2), xytext=(x1, y1),
-                arrowprops=dict(arrowstyle="-|>", color="#111111", lw=lw,
-                                connectionstyle=f"arc3,rad={rad}",
-                                mutation_scale=8), zorder=2)
+    ax.annotate(
+        "",
+        xy=(x2, y2),
+        xytext=(x1, y1),
+        arrowprops=dict(
+            arrowstyle="-|>",
+            color="#111111",
+            lw=lw,
+            connectionstyle=f"arc3,rad={rad}",
+            mutation_scale=8,
+        ),
+        zorder=2,
+    )
+
 
 def lbl(ax, x, y, t, fs=7, ha="left", col="#333333"):
-    ax.text(x, y, t, ha=ha, va="center", fontsize=fs, color=col,
-            bbox=dict(boxstyle="round,pad=0.08", fc=BG, ec="none", alpha=0.92), zorder=5)
+    ax.text(
+        x,
+        y,
+        t,
+        ha=ha,
+        va="center",
+        fontsize=fs,
+        color=col,
+        bbox=dict(boxstyle="round,pad=0.08", fc=BG, ec="none", alpha=0.92),
+        zorder=5,
+    )
+
 
 def hline(ax, x1, x2, y, lw=LW):
     ax.plot([x1, x2], [y, y], color="#111111", lw=lw, zorder=2)
 
+
 def vline(ax, x, y1, y2, lw=LW):
     ax.plot([x, x], [y1, y2], color="#111111", lw=lw, zorder=2)
 
+
 # ══════════════════════════════════════════════════════════════════════════════
-W   = 14
+W = 14
 # y_top  = 35.7 (titre), y_bot calculé après dessin
 # On crée d'abord avec H provisoire, on recadre à la fin
 Y_TOP = 36.0
-Y_BOT = 25.0     # sera recalculé
-H_COORD = Y_TOP - Y_BOT   # ≈ 11 unités de contenu
+Y_BOT = 25.0  # sera recalculé
+H_COORD = Y_TOP - Y_BOT  # ≈ 11 unités de contenu
 
 fig, ax = plt.subplots(figsize=(W, W * H_COORD / W))  # aspect carré approx
 ax.set_xlim(0, W)
@@ -79,8 +163,15 @@ ax.axis("off")
 fig.patch.set_facecolor(BG)
 
 # ── Titre ─────────────────────────────────────────────────────────────────────
-ax.text(W/2, 35.5, "Diagramme de fonctionnement — Application Sportive",
-        ha="center", fontsize=14, fontweight="bold", color="#111111")
+ax.text(
+    W / 2,
+    35.5,
+    "Diagramme de fonctionnement — Application Sportive",
+    ha="center",
+    fontsize=14,
+    fontweight="bold",
+    color="#111111",
+)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 1 — NAVIGATION  (y 31–34.8)
@@ -90,8 +181,7 @@ CX = W / 2
 oval(ax, CX, 34.60, 1.4, 0.46, "Départ", fs=8.5)
 arr(ax, CX, 34.37, CX, 34.00)
 
-box_filled(ax, CX, 33.72, 3.4, 0.50,
-           "Menu principal\n(choix du sport)", fs=8.5)
+box_filled(ax, CX, 33.72, 3.4, 0.50, "Menu principal\n(choix du sport)", fs=8.5)
 
 # → q / Fin
 arr(ax, CX - 1.70, 33.72, CX - 3.10, 33.72)
@@ -129,97 +219,139 @@ lbl(ax, 13.25, 32.85, "retour", fs=7, col="#546E7A")
 for sx in SX:
     arr(ax, sx, 31.64, CX, 31.30)
 
-box_filled(ax, CX, 31.02, 6.0, 0.50,
-           "Menu catégorie\n"
-           "match · joueur · equipe · competition · graphiques · ajouter · historique",
-           fs=8)
+box_filled(
+    ax,
+    CX,
+    31.02,
+    6.0,
+    0.50,
+    "Menu catégorie\n"
+    "match · joueur · equipe · competition · graphiques · ajouter · historique",
+    fs=8,
+)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 2 — 7 BRANCHES EN COLONNES  (y 0.5–30.5)
 # Centres X : 1.0  3.0  5.0  7.0  9.0  11.0  13.0
 # ══════════════════════════════════════════════════════════════════════════════
-BW    = 1.78    # largeur boîte branche
-BH    = 0.42    # hauteur boîte action
-DY    = 0.60    # espacement vertical entre items
-TOP_Y = 30.60   # y de la tête de branche
-CXS   = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0]
+BW = 1.78  # largeur boîte branche
+BH = 0.42  # hauteur boîte action
+DY = 0.60  # espacement vertical entre items
+TOP_Y = 30.60  # y de la tête de branche
+CXS = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0]
 
 BRANCHES = [
-    ("match",       "Sous-menu Match", [
-        "Matchs d'une équipe",
-        "Confrontations directes",
-        "Matchs par date",
-        "Filtre score / seuil",
-        "Statistiques agrégées",
-    ]),
-    ("joueur",      "Sous-menu Joueur", [
-        "Chercher par nom",
-        "Chercher par équipe",
-        "Chercher par position",
-        "Stats d'un joueur",
-    ]),
-    ("equipe",      "Sous-menu Équipe", [
-        "Stats V/D/N/Pts",
-        "Top attaque",
-        "Top défense",
-        "Classement",
-    ]),
-    ("competition", "Sous-menu Compétition", [
-        "Classement général",
-        "Stats par ligue",
-        "Top attaque / défense",
-        "Toutes saisons",
-    ]),
-    ("graphiques",  "Sous-menu Graphiques", [
-        "[c] Classement PNG",
-        "[1-N] Stats graphiques",
-        "[7] Radar équipe",
-        "[8] Comparaison",
-        "Saisie paramètres",
-    ]),
-    ("ajouter",     "Saisie guidée", [
-        "Date (AAAA-MM-JJ)",
-        "Équipe 1",
-        "Équipe 2",
-        "Score 1",
-        "Score 2",
-    ]),
-    ("historique",  "Lecture historique", [
-        "Lecture CSV",
-        "Affichage liste triée",
-    ]),
+    (
+        "match",
+        "Sous-menu Match",
+        [
+            "Matchs d'une équipe",
+            "Confrontations directes",
+            "Matchs par date",
+            "Filtre score / seuil",
+            "Statistiques agrégées",
+        ],
+    ),
+    (
+        "joueur",
+        "Sous-menu Joueur",
+        [
+            "Chercher par nom",
+            "Chercher par équipe",
+            "Chercher par position",
+            "Stats d'un joueur",
+        ],
+    ),
+    (
+        "equipe",
+        "Sous-menu Équipe",
+        [
+            "Stats V/D/N/Pts",
+            "Top attaque",
+            "Top défense",
+            "Classement",
+        ],
+    ),
+    (
+        "competition",
+        "Sous-menu Compétition",
+        [
+            "Classement général",
+            "Stats par ligue",
+            "Top attaque / défense",
+            "Toutes saisons",
+        ],
+    ),
+    (
+        "graphiques",
+        "Sous-menu Graphiques",
+        [
+            "[c] Classement PNG",
+            "[1-N] Stats graphiques",
+            "[7] Radar équipe",
+            "[8] Comparaison",
+            "Saisie paramètres",
+        ],
+    ),
+    (
+        "ajouter",
+        "Saisie guidée",
+        [
+            "Date (AAAA-MM-JJ)",
+            "Équipe 1",
+            "Équipe 2",
+            "Score 1",
+            "Score 2",
+        ],
+    ),
+    (
+        "historique",
+        "Lecture historique",
+        [
+            "Lecture CSV",
+            "Affichage liste triée",
+        ],
+    ),
 ]
 
 # Flèches menu catégorie → têtes de branches
 for cx in CXS:
     arr(ax, CX, 30.77, cx, TOP_Y + 0.25)
 
-for (cx, (cat, subtitle, items)) in zip(CXS, BRANCHES):
+for cx, (cat, subtitle, items) in zip(CXS, BRANCHES):
     # Tête de branche
     box(ax, cx, TOP_Y, BW, 0.44, cat, fs=8, bold=True)
-    ax.text(cx, TOP_Y - 0.32, subtitle,
-            ha="center", va="center", fontsize=6, color="#555555", zorder=4)
+    ax.text(
+        cx,
+        TOP_Y - 0.32,
+        subtitle,
+        ha="center",
+        va="center",
+        fontsize=6,
+        color="#555555",
+        zorder=4,
+    )
 
     # Items
     for i, txt in enumerate(items):
         yi = TOP_Y - 0.68 - i * DY
-        arr(ax, cx, TOP_Y - 0.44 - i * DY, cx, yi + BH/2)
+        arr(ax, cx, TOP_Y - 0.44 - i * DY, cx, yi + BH / 2)
         box(ax, cx, yi, BW, BH, txt, fs=7)
 
     # Boîte sortie (dashed)
-    y_last = TOP_Y - 0.68 - (len(items)-1) * DY
-    y_out  = y_last - BH/2 - 0.14
-    arr(ax, cx, y_last - BH/2, cx, y_out)
+    y_last = TOP_Y - 0.68 - (len(items) - 1) * DY
+    y_out = y_last - BH / 2 - 0.14
+    arr(ax, cx, y_last - BH / 2, cx, y_out)
 
     if cat == "graphiques":
         # Décision dans graphiques
         diamond(ax, cx, y_out, w=0.38, h=0.24)
         lbl(ax, cx + 0.42, y_out, "valide ?", fs=6.5)
         y_save = y_out - 0.55
-        arr(ax, cx, y_out - 0.24, cx, y_save + BH/2)
+        arr(ax, cx, y_out - 0.24, cx, y_save + BH / 2)
         lbl(ax, cx + 0.08, y_out - 0.38, "Oui", fs=6.5, col="#1B5E20")
         box(ax, cx, y_save, BW, BH, "Sauvegarde\noutput/*.png", fs=6.5, dash=True)
-        y_bottom = y_save - BH/2
+        y_bottom = y_save - BH / 2
         vline(ax, cx - 0.90, y_out, y_out + 0.45)
         hline(ax, cx - 0.90, cx - 0.38, y_out)
         lbl(ax, cx - 1.88, y_out + 0.12, "Non\n→retour", fs=6.2, col="#B71C1C")
@@ -229,40 +361,54 @@ for (cx, (cat, subtitle, items)) in zip(CXS, BRANCHES):
         diamond(ax, cx, y_out, w=0.38, h=0.24)
         lbl(ax, cx + 0.42, y_out, "valide ?", fs=6.5)
         y_save = y_out - 0.55
-        arr(ax, cx, y_out - 0.24, cx, y_save + BH/2)
+        arr(ax, cx, y_out - 0.24, cx, y_save + BH / 2)
         lbl(ax, cx + 0.08, y_out - 0.38, "Oui", fs=6.5, col="#1B5E20")
         box(ax, cx, y_save, BW, BH, "→ nouveaux_matchs.csv", fs=6.5, dash=True)
         # Non → annulation (à droite)
         box(ax, cx + 1.0, y_out, BW - 0.3, 0.32, "Annulation", fs=6.5, dash=True)
         hline(ax, cx + 0.38, cx + 1.0, y_out)
         lbl(ax, cx + 0.42, y_out + 0.20, "Non", fs=6.2, col="#B71C1C")
-        y_bottom = y_save - BH/2
+        y_bottom = y_save - BH / 2
 
     else:
         box(ax, cx, y_out, BW, BH, "Affichage\nterminal", fs=7, dash=True)
-        y_bottom = y_out - BH/2
+        y_bottom = y_out - BH / 2
 
     # Flèche retour → menu catégorie (via ligne verticale sur le bord)
-    side = cx - BW/2 - 0.08 if cx <= CX else cx + BW/2 + 0.08
-    rad  = 0.3 if cx <= CX else -0.3
+    side = cx - BW / 2 - 0.08 if cx <= CX else cx + BW / 2 + 0.08
+    rad = 0.3 if cx <= CX else -0.3
     arr(ax, cx, y_bottom - 0.04, cx, y_bottom - 0.20, lw=0.7)
-    ax.text(cx, y_bottom - 0.33, "↺ retour",
-            ha="center", va="center", fontsize=6, color="#546E7A", zorder=4)
+    ax.text(
+        cx,
+        y_bottom - 0.33,
+        "↺ retour",
+        ha="center",
+        va="center",
+        fontsize=6,
+        color="#546E7A",
+        zorder=4,
+    )
 
 # ── Note bas de page ──────────────────────────────────────────────────────────
 # ── Calcul dynamique du bas du contenu ───────────────────────────────────────
 # Branche la plus longue : 5 items + sortie + décision + sauvegarde + retour
-y_last_long  = TOP_Y - 0.68 - 4 * DY          # centre dernier item (5e)
-y_out_long   = y_last_long - BH/2 - 0.14       # centre sortie/décision
-y_save_long  = y_out_long - 0.55               # centre boîte sauvegarde
-y_content_bot = y_save_long - BH/2 - 0.40      # bas + retour texte
+y_last_long = TOP_Y - 0.68 - 4 * DY  # centre dernier item (5e)
+y_out_long = y_last_long - BH / 2 - 0.14  # centre sortie/décision
+y_save_long = y_out_long - 0.55  # centre boîte sauvegarde
+y_content_bot = y_save_long - BH / 2 - 0.40  # bas + retour texte
 
 NOTE_Y = y_content_bot - 0.45
-ax.text(W/2, NOTE_Y,
-        "Les résultats ajoutés via « ajouter » sont automatiquement intégrés\n"
-        "dans tous les classements, statistiques et graphiques (GestionResultats).",
-        ha="center", va="center", fontsize=7.5, color="#444",
-        bbox=dict(boxstyle="round,pad=0.35", fc="#F5F5F5", ec="#BBBBBB", lw=0.8))
+ax.text(
+    W / 2,
+    NOTE_Y,
+    "Les résultats ajoutés via « ajouter » sont automatiquement intégrés\n"
+    "dans tous les classements, statistiques et graphiques (GestionResultats).",
+    ha="center",
+    va="center",
+    fontsize=7.5,
+    color="#444",
+    bbox=dict(boxstyle="round,pad=0.35", fc="#F5F5F5", ec="#BBBBBB", lw=0.8),
+)
 
 # Recadrer y_lim sur le contenu exact — la figsize est ajustée en conséquence
 Y_TOP_REAL = 36.0

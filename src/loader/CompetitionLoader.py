@@ -35,8 +35,8 @@ class CompetitionLoader:
 
 # ── Football ──────────────────────────────────────────────────────────────────
 
-class FootballCompetitionLoader:
 
+class FootballCompetitionLoader:
     DATA_MATCHES = "data/football/match.csv"
     DATA_TEAMS = "data/football/team.csv"
     DATA_LEAGUES = "data/football/league.csv"
@@ -67,29 +67,35 @@ class FootballCompetitionLoader:
         print("  1 - Classement d'une ligue pour une saison")
         print("  2 - Meilleures attaques d'une ligue")
         print("  3 - Meilleures défenses d'une ligue")
-        print("  4 - Classement général toutes saisons")
+        print("  4 - Classement général d'un championnat (toutes saisons)")
         choix = input("\n  Votre choix : ").strip()
 
         lid = self._choisir_ligue(leagues, countries, lg_ctry)
-        if lid is None:
-            return saison == self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
+        saison = self._choisir_saison(df_match) if choix in ["1", "2", "3"] else None
 
         df = df_match.copy()
-        if lid: df = df[df["league_id"] == lid]
-        if saison: df = df[df["season"] == saison]
-        if df.empty: print("  Aucun match trouvé."); return
+        if lid:
+            df = df[df["league_id"] == lid]
+        if saison:
+            df = df[df["season"] == saison]
+        if df.empty:
+            print("  Aucun match trouvé.")
+            return
 
-        comp = self._construire(df, teams, abbrevs, leagues.get(lid, str(lid)))
+        nom_ligue = leagues.get(lid, "Toutes ligues") if lid else "Toutes ligues"
+        comp = self._construire(df, teams, abbrevs, nom_ligue)
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=True)
-        if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
+        if nb:
+            print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         if choix == "1":
             cl = comp.classement_par("points")
-            self._afficher_foot(cl, f"{comp.nom} — {saison}")
+            self._afficher_foot(cl, f"{nom_ligue} — {saison}")
         elif choix == "2":
             cl = comp.classement_par("score_pour")
-            print(f"\n=== Meilleures attaques — {comp.nom} {saison} ===\n")
+            print(f"\n=== Meilleures attaques — {nom_ligue} {saison or ''} ===\n")
             print(f"  {'#':<4}{'Équipe':<30}{'Buts':>6}{'Moy/match':>10}")
             print("  " + "─" * 52)
             for i, e in enumerate(cl, 1):
@@ -97,25 +103,27 @@ class FootballCompetitionLoader:
                 print(f"  {i:<4}{e.nom:<30}{e.score_pour:>6.0f}{moy:>10.2f}")
         elif choix == "3":
             cl = sorted(comp.equipes.values(), key=lambda e: e.score_contre)
-            print(f"\n=== Meilleures défenses — {comp.nom} {saison} ===\n")
+            print(f"\n=== Meilleures défenses — {nom_ligue} {saison or ''} ===\n")
             print(f"  {'#':<4}{'Équipe':<30}{'Buts enc.':>10}{'Moy/match':>10}")
             print("  " + "─" * 56)
             for i, e in enumerate(cl, 1):
                 moy = e.score_contre / e.matchs_joues if e.matchs_joues else 0
                 print(f"  {i:<4}{e.nom:<30}{e.score_contre:>10.0f}{moy:>10.2f}")
         elif choix == "4":
-            comp_all = self._construire(df_match, teams, abbrevs, "Toutes ligues — Toutes saisons")
-            cl = comp_all.classement_par("points")
-            self._afficher_foot(cl[:30], comp_all.nom)
+            cl = comp.classement_par("points")
+            self._afficher_foot(cl, f"{nom_ligue} — Toutes saisons")
 
     def _construire(self, df, teams, abbrevs, nom_comp: str) -> Competition:
         comp = Competition(nom_comp, "football")
         for _, row in df.iterrows():
             hid, aid = int(row["home_team_api_id"]), int(row["away_team_api_id"])
-            hg,  ag  = int(row["home_team_goal"]),   int(row["away_team_goal"])
+            hg, ag = int(row["home_team_goal"]), int(row["away_team_goal"])
             for tid in [hid, aid]:
                 if str(tid) not in comp.equipes:
-                    comp.ajouter_equipe(str(tid), Equipe(teams.get(tid, str(tid)), "football", abbrevs.get(tid)))
+                    comp.ajouter_equipe(
+                        str(tid),
+                        Equipe(teams.get(tid, str(tid)), "football", abbrevs.get(tid)),
+                    )
             comp.equipes[str(hid)].ajouter_match(hg, ag)
             comp.equipes[str(aid)].ajouter_match(ag, hg)
         return comp
@@ -137,12 +145,16 @@ class FootballCompetitionLoader:
 
     def _afficher_foot(self, classement: list, titre: str) -> None:
         print(f"\n=== {titre} ===\n")
-        print(f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'N':>4}{'D':>4}{'BP':>5}{'BC':>5}{'DB':>6}{'Pts':>5}")
+        print(
+            f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'N':>4}{'D':>4}{'BP':>5}{'BC':>5}{'DB':>6}{'Pts':>5}"
+        )
         print("  " + "─" * 72)
         for i, e in enumerate(classement, 1):
-            print(f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.nuls:>4}"
-                  f"{e.defaites:>4}{e.score_pour:>5.0f}{e.score_contre:>5.0f}"
-                  f"{e.difference_score:>+6.0f}{e.points:>5}")
+            print(
+                f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.nuls:>4}"
+                f"{e.defaites:>4}{e.score_pour:>5.0f}{e.score_contre:>5.0f}"
+                f"{e.difference_score:>+6.0f}{e.points:>5}"
+            )
 
 
 CompetitionLoader.register("football", FootballCompetitionLoader)
@@ -150,8 +162,8 @@ CompetitionLoader.register("football", FootballCompetitionLoader)
 
 # ── Basketball ────────────────────────────────────────────────────────────────
 
-class BasketballCompetitionLoader:
 
+class BasketballCompetitionLoader:
     DATA_GAMES = "data/basketball/game.csv"
     DATA_TEAMS = "data/basketball/team.csv"
 
@@ -170,39 +182,61 @@ class BasketballCompetitionLoader:
 
         comp = Competition(f"NBA — {season_type}", "basketball")
         for _, row in df.iterrows():
-            hid, aid   = int(row["team_id_home"]), int(row["team_id_away"])
-            hpts, apts = int(row["pts_home"]),     int(row["pts_away"])
+            hid, aid = int(row["team_id_home"]), int(row["team_id_away"])
+            hpts, apts = int(row["pts_home"]), int(row["pts_away"])
             for tid in [hid, aid]:
                 if str(tid) not in comp.equipes:
-                    comp.ajouter_equipe(str(tid), Equipe(teams.get(tid, str(tid)), "basketball", abbrevs.get(tid)))
-            eh = comp.equipes[str(hid)]; ea = comp.equipes[str(aid)]
+                    comp.ajouter_equipe(
+                        str(tid),
+                        Equipe(
+                            teams.get(tid, str(tid)), "basketball", abbrevs.get(tid)
+                        ),
+                    )
+            eh = comp.equipes[str(hid)]
+            ea = comp.equipes[str(aid)]
             eh.ajouter_match(hpts, apts, nul_possible=False)
             ea.ajouter_match(apts, hpts, nul_possible=False)
-            eh.rebonds += float(row["reb_home"] or 0); eh.passes += float(row["ast_home"] or 0)
-            eh.interceptions += float(row["stl_home"] or 0); eh.contres += float(row["blk_home"] or 0)
-            ea.rebonds += float(row["reb_away"] or 0); ea.passes += float(row["ast_away"] or 0)
-            ea.interceptions += float(row["stl_away"] or 0); ea.contres += float(row["blk_away"] or 0)
+            eh.rebonds += float(row["reb_home"] or 0)
+            eh.passes += float(row["ast_home"] or 0)
+            eh.interceptions += float(row["stl_home"] or 0)
+            eh.contres += float(row["blk_home"] or 0)
+            ea.rebonds += float(row["reb_away"] or 0)
+            ea.passes += float(row["ast_away"] or 0)
+            ea.interceptions += float(row["stl_away"] or 0)
+            ea.contres += float(row["blk_away"] or 0)
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
-        if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
+        if nb:
+            print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print("\n  Que voulez-vous faire ?")
-        print("  1 - Classement général  2 - Meilleures attaques  3 - Meilleures défenses")
+        print(
+            "  1 - Classement général  2 - Meilleures attaques  3 - Meilleures défenses"
+        )
         print("  4 - Classement rebonds  5 - Classement passes")
         choix = input("\n  Votre choix : ").strip()
 
         if choix == "1":
             cl = comp.classement_par("victoires")
             print(f"\n=== {comp.nom} ===\n")
-            print(f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'D':>4}{'Pts+':>6}{'Pts-':>6}{'Diff':>7}")
+            print(
+                f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'D':>4}{'Pts+':>6}{'Pts-':>6}{'Diff':>7}"
+            )
             print("  " + "─" * 65)
             for i, e in enumerate(cl, 1):
-                print(f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}"
-                      f"{e.score_pour:>6.0f}{e.score_contre:>6.0f}{e.difference_score:>+7.0f}")
+                print(
+                    f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}"
+                    f"{e.score_pour:>6.0f}{e.score_contre:>6.0f}{e.difference_score:>+7.0f}"
+                )
         elif choix in ["2", "3", "4", "5"]:
-            critere = {"2": ("score_pour", "Pts marqués"), "3": ("score_contre", "Pts encaissés"),
-                       "4": ("rebonds", "Rebonds"), "5": ("passes", "Passes")}[choix]
+            critere = {
+                "2": ("score_pour", "Pts marqués"),
+                "3": ("score_contre", "Pts encaissés"),
+                "4": ("rebonds", "Rebonds"),
+                "5": ("passes", "Passes"),
+            }[choix]
             if choix == "3":
                 cl = sorted(comp.equipes.values(), key=lambda e: e.score_contre)
             else:
@@ -221,8 +255,8 @@ CompetitionLoader.register("basketball", BasketballCompetitionLoader)
 
 # ── League of Legends ─────────────────────────────────────────────────────────
 
-class LoLCompetitionLoader:
 
+class LoLCompetitionLoader:
     DATA_MATCHES = "data/LOL/match.csv"
     DATA_TEAMS = "data/LOL/team.csv"
 
@@ -238,7 +272,9 @@ class LoLCompetitionLoader:
             for side, opp in [("blue", "red"), ("red", "blue")]:
                 abrev = str(row[f"team_{side}"])
                 if abrev not in comp.equipes:
-                    comp.ajouter_equipe(abrev, Equipe(teams_info.get(abrev, abrev), "LOL", abrev))
+                    comp.ajouter_equipe(
+                        abrev, Equipe(teams_info.get(abrev, abrev), "LOL", abrev)
+                    )
                 e = comp.equipes[abrev]
                 e.matchs_joues += 1
                 e.kills += int(row[f"kills_team_{side}"] or 0)
@@ -254,11 +290,15 @@ class LoLCompetitionLoader:
                     e.defaites += 1
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
-        if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
+        if nb:
+            print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print("\n  Que voulez-vous faire ?")
-        print("  1 - Classement général  2 - Classement kills  3 - Dragons & Barons  4 - Gold")
+        print(
+            "  1 - Classement général  2 - Classement kills  3 - Dragons & Barons  4 - Gold"
+        )
         choix = input("\n  Votre choix : ").strip()
 
         if choix == "1":
@@ -267,7 +307,9 @@ class LoLCompetitionLoader:
             print(f"  {'#':<4}{'Équipe':<30}{'MJ':>4}{'V':>4}{'D':>4}{'Win%':>7}")
             print("  " + "─" * 52)
             for i, e in enumerate(cl, 1):
-                print(f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}{e.winrate:>6.1f}%")
+                print(
+                    f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}{e.winrate:>6.1f}%"
+                )
         elif choix == "2":
             cl = comp.classement_par("kills")
             print(f"\n=== Kills — {comp.nom} ===\n")
@@ -275,7 +317,9 @@ class LoLCompetitionLoader:
                 moy = e.kills / e.matchs_joues if e.matchs_joues else 0
                 print(f"  {i}. {e.nom:<25} {e.kills} kills  (moy: {moy:.1f}/match)")
         elif choix == "3":
-            cl = sorted(comp.equipes.values(), key=lambda e: e.dragons + e.barons, reverse=True)
+            cl = sorted(
+                comp.equipes.values(), key=lambda e: e.dragons + e.barons, reverse=True
+            )
             print(f"\n=== Objectifs — {comp.nom} ===\n")
             for i, e in enumerate(cl, 1):
                 print(f"  {i}. {e.nom:<25} Dragons: {e.dragons}  Barons: {e.barons}")
@@ -292,8 +336,8 @@ CompetitionLoader.register("LOL", LoLCompetitionLoader)
 
 # ── Tennis ────────────────────────────────────────────────────────────────────
 
-class TennisCompetitionLoader:
 
+class TennisCompetitionLoader:
     DATA_ATP_MATCHES = "data/tennis/atp_matches_2024.csv"
     DATA_WTA_MATCHES = "data/tennis/wta_matches_2024.csv"
     DATA_ATP_PLAYERS = "data/tennis/atp_players_2024.csv"
@@ -306,11 +350,15 @@ class TennisCompetitionLoader:
         df_wta_m = pd.read_csv(self.DATA_WTA_MATCHES)
         atp_players = {}
         for _, row in df_atp_p.iterrows():
-            atp_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
+            atp_players[str(row["player_id"])] = (
+                row["name_first"] + " " + row["name_last"]
+            )
 
         wta_players = {}
         for _, row in df_wta_p.iterrows():
-            wta_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
+            wta_players[str(row["player_id"])] = (
+                row["name_first"] + " " + row["name_last"]
+            )
 
         circuit = input("\n  Circuit (ATP / WTA) : ").strip().upper()
         if circuit == "ATP":
@@ -350,15 +398,19 @@ class TennisCompetitionLoader:
             comp.equipes[lid].ajouter_match(0, 1, nul_possible=False)
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
-        if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
+        if nb:
+            print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         cl = comp.classement_par("victoires")
         print(f"\n=== {comp.nom} ===\n")
         print(f"  {'#':<4}{'Joueur':<30}{'MJ':>4}{'V':>4}{'D':>4}{'Win%':>7}")
         print("  " + "─" * 52)
         for i, e in enumerate(cl[:20], 1):
-            print(f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}{e.winrate:>6.1f}%")
+            print(
+                f"  {i:<4}{e.nom:<30}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}{e.winrate:>6.1f}%"
+            )
 
 
 CompetitionLoader.register("tennis", TennisCompetitionLoader)
@@ -366,8 +418,8 @@ CompetitionLoader.register("tennis", TennisCompetitionLoader)
 
 # ── Volleyball ────────────────────────────────────────────────────────────────
 
-class VolleyCompetitionLoader:
 
+class VolleyCompetitionLoader:
     DATA_MEN_MATCHES = "data/volley/match_men.csv"
     DATA_WOMEN_MATCHES = "data/volley/match_women.csv"
     DATA_COUNTRIES = "data/volley/country.csv"
@@ -379,8 +431,8 @@ class VolleyCompetitionLoader:
         countries = {}
         for _, row in df_countries.iterrows():
             countries[row["code"]] = row["country"]
-        df_men["code_1"]   = df_men["country_code_1"]
-        df_men["code_2"]   = df_men["country_code_2"]
+        df_men["code_1"] = df_men["country_code_1"]
+        df_men["code_2"] = df_men["country_code_2"]
         df_women["code_1"] = df_women["country_1"]
         df_women["code_2"] = df_women["country_2"]
 
@@ -394,13 +446,17 @@ class VolleyCompetitionLoader:
             s1, s2 = int(row["set_country_1"]), int(row["set_country_2"])
             for code in [c1, c2]:
                 if code not in comp.equipes:
-                    comp.ajouter_equipe(code, Equipe(countries.get(code, code), "volley", code))
+                    comp.ajouter_equipe(
+                        code, Equipe(countries.get(code, code), "volley", code)
+                    )
             comp.equipes[c1].ajouter_match(s1, s2, nul_possible=False)
             comp.equipes[c2].ajouter_match(s2, s1, nul_possible=False)
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_competition(comp, nul_possible=False)
-        if nb: print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
+        if nb:
+            print(f"  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print("\n  1 - Classement général  2 - Classement sets gagnés")
         choix = input("  Votre choix : ").strip()
@@ -408,17 +464,23 @@ class VolleyCompetitionLoader:
         if choix == "1":
             cl = comp.classement_par("victoires")
             print(f"\n=== {comp.nom} ===\n")
-            print(f"  {'#':<4}{'Pays':<25}{'MJ':>4}{'V':>4}{'D':>4}{'Sets+':>7}{'Sets-':>7}{'Diff':>7}")
+            print(
+                f"  {'#':<4}{'Pays':<25}{'MJ':>4}{'V':>4}{'D':>4}{'Sets+':>7}{'Sets-':>7}{'Diff':>7}"
+            )
             print("  " + "─" * 62)
             for i, e in enumerate(cl, 1):
-                print(f"  {i:<4}{e.nom:<25}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}"
-                      f"{e.score_pour:>7.0f}{e.score_contre:>7.0f}{e.difference_score:>+7.0f}")
+                print(
+                    f"  {i:<4}{e.nom:<25}{e.matchs_joues:>4}{e.victoires:>4}{e.defaites:>4}"
+                    f"{e.score_pour:>7.0f}{e.score_contre:>7.0f}{e.difference_score:>+7.0f}"
+                )
         elif choix == "2":
             cl = comp.classement_par("score_pour")
             print(f"\n=== Sets gagnés — {comp.nom} ===\n")
             for i, e in enumerate(cl, 1):
                 moy = e.score_pour / e.matchs_joues if e.matchs_joues else 0
-                print(f"  {i}. {e.nom:<25} {e.score_pour:.0f} sets  (moy: {moy:.2f}/match)")
+                print(
+                    f"  {i}. {e.nom:<25} {e.score_pour:.0f} sets  (moy: {moy:.2f}/match)"
+                )
 
 
 CompetitionLoader.register("volley", VolleyCompetitionLoader)

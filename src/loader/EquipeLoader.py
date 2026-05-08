@@ -34,8 +34,8 @@ class EquipeLoader:
 
 # ── Football ──────────────────────────────────────────────────────────────────
 
-class FootballEquipeLoader:
 
+class FootballEquipeLoader:
     DATA_MATCHES = "data/football/match.csv"
     DATA_TEAMS = "data/football/team.csv"
 
@@ -47,7 +47,9 @@ class FootballEquipeLoader:
             teams[row["team_api_id"]] = row["team_long_name"]
 
         nom = input("  Nom de l'équipe : ").strip()
-        matches = {tid: tname for tid, tname in teams.items() if nom.lower() in tname.lower()}
+        matches = {
+            tid: tname for tid, tname in teams.items() if nom.lower() in tname.lower()
+        }
         if not matches:
             print("  Aucune équipe trouvée.")
             return
@@ -69,8 +71,11 @@ class FootballEquipeLoader:
             return
 
         df = df_match[
-            ((df_match["home_team_api_id"] == team_id) | (df_match["away_team_api_id"] == team_id)) &
-            (df_match["season"] == saison)
+            (
+                (df_match["home_team_api_id"] == team_id)
+                | (df_match["away_team_api_id"] == team_id)
+            )
+            & (df_match["season"] == saison)
         ]
         e = Equipe(teams.get(team_id, str(team_id)), "football")
         for _, row in df.iterrows():
@@ -80,16 +85,25 @@ class FootballEquipeLoader:
                 e.ajouter_match(int(row["away_team_goal"]), int(row["home_team_goal"]))
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_equipe(e, e.nom)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print(f"\n=== {e.nom} — {saison} ===\n")
         print(f"  Matchs joués   : {e.matchs_joues}")
-        print(f"  Victoires      : {e.victoires}  Nuls : {e.nuls}  Défaites : {e.defaites}")
-        print(f"  Buts marqués   : {e.score_pour:.0f}  (moy: {e.score_pour/e.matchs_joues:.2f}/match)")
-        print(f"  Buts encaissés : {e.score_contre:.0f}  (moy: {e.score_contre/e.matchs_joues:.2f}/match)")
-        print(f"  Différence     : {e.difference_score:+.0f}  |  Points : {e.points}  |  Winrate : {e.winrate:.1f}%")
+        print(
+            f"  Victoires      : {e.victoires}  Nuls : {e.nuls}  Défaites : {e.defaites}"
+        )
+        print(
+            f"  Buts marqués   : {e.score_pour:.0f}  (moy: {e.score_pour / e.matchs_joues:.2f}/match)"
+        )
+        print(
+            f"  Buts encaissés : {e.score_contre:.0f}  (moy: {e.score_contre / e.matchs_joues:.2f}/match)"
+        )
+        print(
+            f"  Différence     : {e.difference_score:+.0f}  |  Points : {e.points}  |  Winrate : {e.winrate:.1f}%"
+        )
 
 
 EquipeLoader.register("football", FootballEquipeLoader)
@@ -97,8 +111,8 @@ EquipeLoader.register("football", FootballEquipeLoader)
 
 # ── Basketball ────────────────────────────────────────────────────────────────
 
-class BasketballEquipeLoader:
 
+class BasketballEquipeLoader:
     DATA_GAMES = "data/basketball/game.csv"
     DATA_TEAMS = "data/basketball/team.csv"
 
@@ -114,7 +128,9 @@ class BasketballEquipeLoader:
         df = df_game[df_game["season_type"] == season_type]
 
         nom = input("  Nom de l'équipe : ").strip()
-        team_matches = {tid: tname for tid, tname in teams.items() if nom.lower() in tname.lower()}
+        team_matches = {
+            tid: tname for tid, tname in teams.items() if nom.lower() in tname.lower()
+        }
         if not team_matches:
             print("  Aucune équipe trouvée.")
             return
@@ -124,26 +140,45 @@ class BasketballEquipeLoader:
         e = Equipe(teams.get(team_id, str(team_id)), "basketball")
         for _, row in df.iterrows():
             if int(row["team_id_home"]) == team_id:
-                e.ajouter_match(int(row["pts_home"]), int(row["pts_away"]), nul_possible=False)
-                e.rebonds += float(row["reb_home"] or 0); e.passes += float(row["ast_home"] or 0)
-                e.interceptions += float(row["stl_home"] or 0); e.contres += float(row["blk_home"] or 0)
+                e.ajouter_match(
+                    int(row["pts_home"]), int(row["pts_away"]), nul_possible=False
+                )
+                e.rebonds += float(row["reb_home"] or 0)
+                e.passes += float(row["ast_home"] or 0)
+                e.interceptions += float(row["stl_home"] or 0)
+                e.contres += float(row["blk_home"] or 0)
             else:
-                e.ajouter_match(int(row["pts_away"]), int(row["pts_home"]), nul_possible=False)
-                e.rebonds += float(row["reb_away"] or 0); e.passes += float(row["ast_away"] or 0)
-                e.interceptions += float(row["stl_away"] or 0); e.contres += float(row["blk_away"] or 0)
+                e.ajouter_match(
+                    int(row["pts_away"]), int(row["pts_home"]), nul_possible=False
+                )
+                e.rebonds += float(row["reb_away"] or 0)
+                e.passes += float(row["ast_away"] or 0)
+                e.interceptions += float(row["stl_away"] or 0)
+                e.contres += float(row["blk_away"] or 0)
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         mj = e.matchs_joues
         print(f"\n=== {e.nom} — {season_type} ===\n")
-        print(f"  Matchs joués     : {mj}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)")
-        print(f"  Points marqués   : {e.score_pour:.0f}  (moy: {e.score_pour/mj:.1f}/match)")
-        print(f"  Points encaissés : {e.score_contre:.0f}  (moy: {e.score_contre/mj:.1f}/match)")
-        print(f"  Rebonds          : {e.rebonds:.0f}  (moy: {e.rebonds/mj:.1f})  |  Passes : {e.passes:.0f}  (moy: {e.passes/mj:.1f})")
-        print(f"  Interceptions    : {e.interceptions:.0f}  (moy: {e.interceptions/mj:.1f})  |  Contres : {e.contres:.0f}  (moy: {e.contres/mj:.1f})")
+        print(
+            f"  Matchs joués     : {mj}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)"
+        )
+        print(
+            f"  Points marqués   : {e.score_pour:.0f}  (moy: {e.score_pour / mj:.1f}/match)"
+        )
+        print(
+            f"  Points encaissés : {e.score_contre:.0f}  (moy: {e.score_contre / mj:.1f}/match)"
+        )
+        print(
+            f"  Rebonds          : {e.rebonds:.0f}  (moy: {e.rebonds / mj:.1f})  |  Passes : {e.passes:.0f}  (moy: {e.passes / mj:.1f})"
+        )
+        print(
+            f"  Interceptions    : {e.interceptions:.0f}  (moy: {e.interceptions / mj:.1f})  |  Contres : {e.contres:.0f}  (moy: {e.contres / mj:.1f})"
+        )
 
 
 EquipeLoader.register("basketball", BasketballEquipeLoader)
@@ -151,10 +186,10 @@ EquipeLoader.register("basketball", BasketballEquipeLoader)
 
 # ── League of Legends ─────────────────────────────────────────────────────────
 
-class LoLEquipeLoader:
 
+class LoLEquipeLoader:
     DATA_MATCHES = "data/LOL/match.csv"
-    DATA_TEAMS   = "data/LOL/team.csv"
+    DATA_TEAMS = "data/LOL/team.csv"
 
     def run(self) -> None:
         df = pd.read_csv(self.DATA_MATCHES)
@@ -164,8 +199,11 @@ class LoLEquipeLoader:
             teams_info[row["team_abbreviation"]] = row["team"]
 
         nom = input("  Nom ou abréviation de l'équipe : ").strip()
-        equipes_trouvees = {abrev: tname for abrev, tname in teams_info.items()
-                            if nom.lower() in tname.lower() or nom.lower() in abrev.lower()}
+        equipes_trouvees = {
+            abrev: tname
+            for abrev, tname in teams_info.items()
+            if nom.lower() in tname.lower() or nom.lower() in abrev.lower()
+        }
         if not equipes_trouvees:
             print("  Aucune équipe trouvée.")
             return
@@ -189,16 +227,21 @@ class LoLEquipeLoader:
                         e.defaites += 1
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         mj = e.matchs_joues
         print(f"\n=== {e.nom} ({e.abreviation}) ===\n")
-        print(f"  Matchs joués : {mj}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)")
-        print(f"  Kills totaux : {e.kills}  (moy: {e.kills/mj:.1f}/match)")
-        print(f"  Dragons      : {e.dragons}  (moy: {e.dragons/mj:.1f})  |  Barons : {e.barons}  (moy: {e.barons/mj:.1f})")
-        print(f"  Gold total   : {e.gold:.0f}  (moy: {e.gold/mj:.0f}/match)")
+        print(
+            f"  Matchs joués : {mj}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)"
+        )
+        print(f"  Kills totaux : {e.kills}  (moy: {e.kills / mj:.1f}/match)")
+        print(
+            f"  Dragons      : {e.dragons}  (moy: {e.dragons / mj:.1f})  |  Barons : {e.barons}  (moy: {e.barons / mj:.1f})"
+        )
+        print(f"  Gold total   : {e.gold:.0f}  (moy: {e.gold / mj:.0f}/match)")
 
 
 EquipeLoader.register("LOL", LoLEquipeLoader)
@@ -206,8 +249,8 @@ EquipeLoader.register("LOL", LoLEquipeLoader)
 
 # ── Tennis ────────────────────────────────────────────────────────────────────
 
-class TennisEquipeLoader:
 
+class TennisEquipeLoader:
     DATA_ATP_MATCHES = "data/tennis/atp_matches_2024.csv"
     DATA_WTA_MATCHES = "data/tennis/wta_matches_2024.csv"
     DATA_ATP_PLAYERS = "data/tennis/atp_players_2024.csv"
@@ -220,11 +263,15 @@ class TennisEquipeLoader:
         df_wta_m = pd.read_csv(self.DATA_WTA_MATCHES)
         atp_players = {}
         for _, row in df_atp_p.iterrows():
-            atp_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
+            atp_players[str(row["player_id"])] = (
+                row["name_first"] + " " + row["name_last"]
+            )
 
         wta_players = {}
         for _, row in df_wta_p.iterrows():
-            wta_players[str(row["player_id"])] = row["name_first"] + " " + row["name_last"]
+            wta_players[str(row["player_id"])] = (
+                row["name_first"] + " " + row["name_last"]
+            )
 
         circuit = input("\n  Circuit (ATP / WTA) : ").strip().upper()
         if circuit == "ATP":
@@ -242,7 +289,8 @@ class TennisEquipeLoader:
                 pid = p_id
                 break
         if not pid:
-            print("  Joueur non trouvé."); return
+            print("  Joueur non trouvé.")
+            return
 
         e = Equipe(players[pid], "tennis")
         for _, row in df_m.iterrows():
@@ -254,12 +302,15 @@ class TennisEquipeLoader:
                 e.ajouter_match(0, 1, nul_possible=False)
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print(f"\n=== {e.nom} — {circuit} 2024 ===\n")
-        print(f"  Matchs joués : {e.matchs_joues}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)")
+        print(
+            f"  Matchs joués : {e.matchs_joues}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)"
+        )
 
 
 EquipeLoader.register("tennis", TennisEquipeLoader)
@@ -267,8 +318,8 @@ EquipeLoader.register("tennis", TennisEquipeLoader)
 
 # ── Volleyball ────────────────────────────────────────────────────────────────
 
-class VolleyEquipeLoader:
 
+class VolleyEquipeLoader:
     DATA_MEN_MATCHES = "data/volley/match_men.csv"
     DATA_WOMEN_MATCHES = "data/volley/match_women.csv"
     DATA_COUNTRIES = "data/volley/country.csv"
@@ -309,13 +360,18 @@ class VolleyEquipeLoader:
                 e.ajouter_match(s2, s1, nul_possible=False)
 
         from src.loader.GestionResultats import GestionResultats
+
         nb = GestionResultats.appliquer_a_equipe(e, e.nom, nul_possible=False)
         if nb:
             print(f"\n  (+ {nb} nouveau(x) résultat(s) inclus)")
 
         print(f"\n=== {e.nom} — Volley {genre} JO 2024 ===\n")
-        print(f"  Matchs joués : {e.matchs_joues}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)")
-        print(f"  Sets gagnés  : {e.score_pour:.0f}  |  Sets perdus : {e.score_contre:.0f}  |  Diff : {e.difference_score:+.0f}")
+        print(
+            f"  Matchs joués : {e.matchs_joues}  |  V:{e.victoires} D:{e.defaites}  ({e.winrate:.1f}% winrate)"
+        )
+        print(
+            f"  Sets gagnés  : {e.score_pour:.0f}  |  Sets perdus : {e.score_contre:.0f}  |  Diff : {e.difference_score:+.0f}"
+        )
 
 
 EquipeLoader.register("volley", VolleyEquipeLoader)

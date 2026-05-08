@@ -16,8 +16,14 @@ class GestionResultats:
     """
 
     @staticmethod
-    def sauvegarder(sport: str, date: str, equipe_1: str, equipe_2: str,
-                    score_1: float, score_2: float) -> None:
+    def sauvegarder(
+        sport: str,
+        date: str,
+        equipe_1: str,
+        equipe_2: str,
+        score_1: float,
+        score_2: float,
+    ) -> None:
         """Sauvegarde un résultat de match dans le fichier de résultats.
 
         Parameters
@@ -36,19 +42,23 @@ class GestionResultats:
             Score de la deuxième équipe.
         """
         os.makedirs(os.path.dirname(FICHIER_RESULTATS), exist_ok=True)
-        deja_existe = os.path.exists(FICHIER_RESULTATS) and os.path.getsize(FICHIER_RESULTATS) > 0
+        deja_existe = (
+            os.path.exists(FICHIER_RESULTATS) and os.path.getsize(FICHIER_RESULTATS) > 0
+        )
         with open(FICHIER_RESULTATS, "a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=COLONNES)
             if not deja_existe:
                 writer.writeheader()
-            writer.writerow({
-                "sport":    sport,
-                "date":     date,
-                "equipe_1": equipe_1,
-                "equipe_2": equipe_2,
-                "score_1":  score_1,
-                "score_2":  score_2,
-            })
+            writer.writerow(
+                {
+                    "sport": sport,
+                    "date": date,
+                    "equipe_1": equipe_1,
+                    "equipe_2": equipe_2,
+                    "score_1": score_1,
+                    "score_2": score_2,
+                }
+            )
 
     @staticmethod
     def charger(sport: str) -> list:
@@ -70,14 +80,16 @@ class GestionResultats:
         with open(FICHIER_RESULTATS, "r", encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 if row.get("sport") == sport:
-                    resultats.append(Match(
-                        date=row["date"],
-                        equipe_1=row["equipe_1"],
-                        equipe_2=row["equipe_2"],
-                        score_1=float(row["score_1"]),
-                        score_2=float(row["score_2"]),
-                        sport=row["sport"],
-                    ))
+                    resultats.append(
+                        Match(
+                            date=row["date"],
+                            equipe_1=row["equipe_1"],
+                            equipe_2=row["equipe_2"],
+                            score_1=float(row["score_1"]),
+                            score_2=float(row["score_2"]),
+                            sport=row["sport"],
+                        )
+                    )
         return resultats
 
     @staticmethod
@@ -100,7 +112,9 @@ class GestionResultats:
         return a in b or b in a
 
     @staticmethod
-    def appliquer_a_equipe(equipe: Equipe, nom_filtre: str, nul_possible: bool = True) -> int:
+    def appliquer_a_equipe(
+        equipe: Equipe, nom_filtre: str, nul_possible: bool = True
+    ) -> int:
         """Applique les nouveaux résultats à un objet Equipe.
 
         Parameters
@@ -182,12 +196,14 @@ class GestionResultats:
         with open(FICHIER_RESULTATS, "r", encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 if sport is None or row.get("sport") == sport:
-                    resultats.append(Match(
-                        date=row["date"],
-                        equipe_1=row["equipe_1"],
-                        equipe_2=row["equipe_2"],
-                        score_1=float(row["score_1"]),
-                        score_2=float(row["score_2"]),
-                        sport=row["sport"],
-                    ))
+                    resultats.append(
+                        Match(
+                            date=row["date"],
+                            equipe_1=row["equipe_1"],
+                            equipe_2=row["equipe_2"],
+                            score_1=float(row["score_1"]),
+                            score_2=float(row["score_2"]),
+                            sport=row["sport"],
+                        )
+                    )
         return resultats

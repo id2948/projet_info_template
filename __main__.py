@@ -4,21 +4,21 @@ from src.Model.Joueur import Joueur
 from src.Model.Equipe import Equipe
 from src.Model.Competition import Competition
 
-import src.loader.MatchLoader       # noqa: F401
-import src.loader.JoueurLoader      # noqa: F401
-import src.loader.EquipeLoader      # noqa: F401
+import src.loader.MatchLoader  # noqa: F401
+import src.loader.JoueurLoader  # noqa: F401
+import src.loader.EquipeLoader  # noqa: F401
 import src.loader.CompetitionLoader  # noqa: F401
 
 SPORTS_DISPONIBLES = ["basketball", "football", "LOL", "tennis", "volley"]
 
 CATEGORIES = {
-    "match":       "Résultats et statistiques de matchs",
-    "joueur":      "Recherche et statistiques des joueurs",
-    "equipe":      "Statistiques d'une équipe",
+    "match": "Résultats et statistiques de matchs",
+    "joueur": "Recherche et statistiques des joueurs",
+    "equipe": "Statistiques d'une équipe",
     "competition": "Classements de la compétition",
-    "graphiques":  "Graphiques et classements visuels (PNG)",
-    "ajouter":     "Enregistrer le résultat d'un match",
-    "historique":  "Consulter les résultats enregistrés",
+    "graphiques": "Graphiques et classements visuels (PNG)",
+    "ajouter": "Enregistrer le résultat d'un match",
+    "historique": "Consulter les résultats enregistrés",
 }
 
 _SEP2 = "═" * 56
@@ -62,6 +62,7 @@ def _ajouter_resultat(sport: str) -> None:
         Nom du sport pour lequel enregistrer le résultat.
     """
     from src.loader.GestionResultats import GestionResultats
+
     print(f"\n  ── Enregistrer un résultat — {sport.upper()} ──\n")
     try:
         date = input("  Date       (AAAA-MM-JJ) : ").strip()
@@ -97,6 +98,7 @@ def _afficher_historique(sport: str) -> None:
         Nom du sport dont on veut voir l'historique.
     """
     from src.loader.GestionResultats import GestionResultats
+
     resultats = GestionResultats.lister(sport)
     print(f"\n  ── Résultats enregistrés — {sport.upper()} ({len(resultats)}) ──\n")
     if not resultats:
@@ -109,7 +111,9 @@ def _afficher_historique(sport: str) -> None:
             flag = "<"
         else:
             flag = "="
-        print(f"  {m.date}  {m.equipe_1:<25} {m.score_1:.0f} {flag} {m.score_2:.0f}  {m.equipe_2}")
+        print(
+            f"  {m.date}  {m.equipe_1:<25} {m.score_1:.0f} {flag} {m.score_2:.0f}  {m.equipe_2}"
+        )
 
 
 def _executer_categorie(categorie: str, sport: Sport, sport_saisi: str) -> None:
@@ -134,6 +138,7 @@ def _executer_categorie(categorie: str, sport: Sport, sport_saisi: str) -> None:
         Competition.run_menu(sport)
     elif categorie == "graphiques":
         from src.visualizer.GraphiquesSport import run_menu as graph_menu
+
         graph_menu(sport_saisi)
     elif categorie == "ajouter":
         _ajouter_resultat(sport_saisi)

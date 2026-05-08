@@ -2,8 +2,14 @@ from src.Model.Competition import Competition
 from src.Model.Equipe import Equipe
 
 
-def _equipe(nom: str, victoires: int = 0, nuls: int = 0, defaites: int = 0,
-            buts_pour: int = 0, buts_contre: int = 0) -> Equipe:
+def _equipe(
+    nom: str,
+    victoires: int = 0,
+    nuls: int = 0,
+    defaites: int = 0,
+    buts_pour: int = 0,
+    buts_contre: int = 0,
+) -> Equipe:
     """Construit une Equipe avec un bilan précis sans lire de fichier."""
     e = Equipe(nom, "football")
     for _ in range(victoires):
@@ -41,9 +47,9 @@ def test_ajouter_equipe_remplace_existante():
 
 def test_classement_par_points():
     c = Competition("Test", "football")
-    c.ajouter_equipe("a", _equipe("Team A", victoires=3))         
-    c.ajouter_equipe("b", _equipe("Team B", victoires=1, nuls=2)) 
-    c.ajouter_equipe("c", _equipe("Team C", defaites=3))          
+    c.ajouter_equipe("a", _equipe("Team A", victoires=3))
+    c.ajouter_equipe("b", _equipe("Team B", victoires=1, nuls=2))
+    c.ajouter_equipe("c", _equipe("Team C", defaites=3))
     cl = c.classement_par("points")
     assert cl[0].nom == "Team A"
     assert cl[1].nom == "Team B"
