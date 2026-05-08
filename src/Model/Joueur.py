@@ -116,8 +116,8 @@ class Joueur:
             else:
                 print("  2  Chercher les joueurs par pays")
                 print("  3  Chercher les joueurs par position")
-                print("  5  Chercher les joueurs par équipe")
-            print("  4  Statistiques des joueurs")
+                print("  4  Chercher les joueurs par équipe")
+            print("  5  Statistiques des joueurs")
             print("  0  Retour")
 
             choix = input("\n  Votre choix : ").strip()
@@ -148,11 +148,12 @@ class Joueur:
                     Joueur._afficher(resultats)
                 else:
                     Joueur._chercher_par_position(joueurs)
-            elif choix == "4":
+            elif choix == "5":
                 from src.loader.JoueurLoader import JoueurLoader
 
                 JoueurLoader().afficher_stats(joueurs, sport)
-            elif choix == "5":
+            elif choix == "4":à
+            
                 Joueur._chercher_par_equipe(joueurs)
             else:
                 print("  Choix invalide.")
