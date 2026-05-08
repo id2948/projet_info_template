@@ -337,8 +337,65 @@ Néanmoins, beaucoup des fonctionnalités ne sont pas couvertes. Les Loaders et 
 
 # II - La structure du code
 ## Les Loaders
+
+Tout d’abord, afin d’importer correctement les données, nous avons choisi l’utilisation de loaders. Les fichiers bruts étant au format CSV, nous avons utilisé la librairie pandas afin de transformer ces fichiers en DataFrames, c’est-à-dire en tableaux de données facilement manipulables en Python. Cette première étape permet de lire les fichiers contenant les informations sur les matchs, les joueurs, les équipes ou encore les compétitions.
+Le but des Loaders est de servir d’intermédiaire entre les données et le reste du programme. Les fichiers CSV contiennent les données utilisées durant le projet, mais elles ne peuvent pas être utilisées directement, car leur structure varie selon les sports et les fichiers. Les loaders ont donc pour rôle de lire ces fichiers, de sélectionner les informations utiles, de nettoyer et transformer les données, puis de convertir les lignes en objets Python utilisables par l’application. Ils permettent ainsi de mettre dans le même format toutes les données issues des fichiers csv afin que le reste du programme puisse fonctionner de manière identique. Cette approche améliore l’organisation du code et permet d’ajouter plus facilement de nouvelles sources de données. 
+
+Les fichiers CSV contiennent donc les données, mais la structure n’est pas la même d’un fichier à l’autre. Par exemple, pour les joueurs, certains fichiers utilisent des identifiants (ID) alors que d’autres non, et chaque sport possède également ses propres statistiques spécifiques. Il en est de même pour les matchs, les équipes ou les compétitions, dont les colonnes et l’organisation varient selon les sources de données. Afin de gérer cette hétérogénéité, les loaders utilisent plusieurs méthodes de la librairie pandas. Certaines colonnes sont sélectionnées afin de ne conserver que les informations utiles au programme. Des transformations sont également appliquées pour convertir certains identifiants en chaînes de caractères. . Enfin, un nouveau DataFrame standardisé est reconstruit. Pour cela, une ligne est transformé en dictionnaire, et avec la méthode (**r), chaque ligne est transformée en classe avec comme paramètre les valeurs du dictionnaire.
+Les loaders du projet sont séparés en deux catégories : les loaders génériques et les loaders spécifiques. Les loaders génériques, comme MatchLoader, JoueurLoader, EquipeLoader ou CompetitionLoader, ne lisent pas directement les fichiers CSV. Leur rôle est de servir d’intermédiaires entre le programme et les loaders spécialisés. Ils permettent au reste de l’application d’utiliser toujours les mêmes méthodes, quel que soit le sport choisi.
+
+![Loader](loader.png)
+
+Les loaders spécifiques, comme FootballMatchLoader, BasketballJoueurLoader ou TennisCompetitionLoader, sont quant à eux responsables du traitement réel des données. Ils lisent les fichiers CSV associés à leur sport, sélectionnent les colonnes utiles, nettoient et transforment les données, puis créent les objets Python utilisés dans le programme. Cette séparation permet d’avoir une architecture plus claire et plus modulaire, où chaque loader possède une responsabilité précise. 
+Afin de relier les loaders génériques aux loaders spécifiques, le projet utilise un système de registre avec des instructions comme MatchLoader.register("football", FootballMatchLoader). Lors de l’import des fichiers dans __main__.py, ces lignes sont automatiquement exécutées et enregistrent dans un dictionnaire quel loader doit être utilisé pour chaque sport. Ainsi, lorsque l’utilisateur choisit un sport dans l’application, le loader générique peut retrouver automatiquement le loader spécialisé correspondant et l’utiliser pour charger les données. Ce système permet d’ajouter facilement un nouveau sport sans modifier le reste du programme : il suffit de créer un nouveau loader spécifique puis de l’enregistrer avec register().
+
+![Loader](basketballjoueurloader.png)
+
+
 ## La programmation orientée objet
+
+Nous avons utilisé la programmation orientée objet dans ce projet afin de représenter de manière claire les différentes entités manipulées par l’application, comme les matchs, les joueurs, les équipes ou les compétitions. Le projet manipulant de nombreuses données provenant de sports différents, cela permet d’organiser le code en séparant les responsabilités de chaque classe. Chaque objet possède ainsi ses propres attributs et méthodes, ce qui facilite la gestion des données, les traitements statistiques et les visualisations. Cela permet aussi d’ajouter plus facilement de nouvelles données.
+
+Classe Joueur
+La classe Joueur représente un joueur appartenant à un sport donné. Un joueur est défini par son nom et son sport, mais la classe contient d’autres paramètres optionnels qui correspondent aux informations des joueurs, comme la taille ou le poste, qui ne seront présents que si l’information est dans les fichiers d’import. (Par exemple, la taille n’est pas présente pour les joueurs de LOL car cette information n’est pas pertinente). Afin de simplifier, nous avons créer un seul attribut position qui peut fonctionner pour plusieurs 
+
+
+sports (basket, LOL …), bien que ces positions soient spécifiques à chaque sport
+
+La classe possède aussi des méthodes permettant de trier les joueurs selon certaines caractéristiques afin d’avoir des statistiques par la suite (exemple : _chercher_par_nom, _chercher_par_pays)
+
+![joueur](classe_joueur.png)
+
+Classe Équipe
+
+La classe Equipe représente une équipe. Elle est définie par un nom, un sport et une abréviation. Des statistiques sont aussi présentes en attribut, comme le nombre de matchs joués, le nombre de matchs gagnés … Ces statistiques sont obtenues en agrégant depuis le fichier des matchs par équipe. Il existe aussi des statistiques présentes seulement pour un sport, on peut prendre comme exemple les dragons pour LOL. Nous avons fait le choix de mettre les statistiques dans la classe équipe plutôt que dans la classe match car tout d’abord, comme nous le verrons après, la classe match est très simplifié, et aussi car nous avons pensé qu’il était plus intéressant pour un utilisateur d’avoir des statistiques sur l’année plutôt que par match. En effet, de cette manière il est plus facile de comparer entre les équipes, et cela représente mieux la réussite d’une équipe.
+Classe Match
+La classe Match représente une rencontre sportive entre deux équipes ou deux joueurs appartenant à un sport donné. Un match est défini principalement par une date, deux participants (equipe_1 et equipe_2), leurs scores respectifs ainsi que le sport concerné. La classe contient également certains paramètres optionnels correspondant à des informations spécifiques à certains sports, comme la surface et le tournoi pour le tennis, ou encore le patch pour League of Legends. Ces attributs ne sont présents que si les informations existent dans les fichiers d’import. Afin d’uniformiser la structure des données entre les sports, nous avons choisi d’utiliser des attributs génériques comme score_1 et score_2, même si la signification exacte du score peut varier selon le sport (buts au football, points au basketball, kills pour LOL, sets au volley…).
+La classe Match est volontairement plus simple que la classe Equipe, car nous avons fait le choix de stocker la majorité des statistiques agrégées directement dans les équipes plutôt que dans chaque match individuellement. Les objets Match servent donc principalement à représenter les données brutes des rencontres et à alimenter ensuite les statistiques des équipes et des compétitions. Cette simplification permet également d’avoir une structure commune plus facilement adaptable à des sports très différents.
+Tout comme la classe Joueur, elle possède aussi des méthodes utilisées par l'application afin d'obtenir des statistiques et des rendus visuels.
+
+Classe Competition
+La classe Competition représente une compétition ou un championnat regroupant plusieurs équipes appartenant à un sport donné. Une compétition est définie principalement par son nom et son sport. Elle contient une méthode lui permettant de rajouter des équipes à la compétition et de les stocker dans un dictionnaire afin de pouvoir les retrouver et les manipuler facilement par la suite. La classe possède également des méthodes permettant de trier les équipes selon différents critères statistiques, comme le nombre de points, le nombre de victoires ou la différence de score, afin de générer des classements. Cette classe joue donc un rôle central dans l’organisation des données sportives, puisqu’elle permet de regrouper les équipes d’un même championnat et de comparer leurs performances sur l’ensemble d’une saison.
+
 ## L'application/déroulement du programme
+
+Afin de lancer l’application, l’utilisateur passe par le terminal, il doit exécuter le fichier __main__.py.  Ce fichier joue le rôle de point d’entrée du programme. Sa première fonction est d’importer l’ensemble des loaders afin d’utiliser les données souhaitées par l’utilisateur
+Le fichier main contient donc des fonctions permettant la visualisation de l’appli, comme l’en-tête. Ensuite, une fonction demande à l’utilisateur le sport qu’il souhaite consulter, puis la catégorie des données qu’il souhaite consulter.
+
+![choix](choix.png)
+
+
+Ici, si l’utilisateur choisit joueur, équipe, compétition ou match, l’appli fera appel à la méthode run_menu qui est présente dans chacune de ces classes, et qui fera apparaître un menu déroulant faisant appel aux méthodes de cette même classe, afin d’obtenir des statistiques. Voici un exemple avec la classe match : 
+
+![Run_menu](run_menu.png)
+
+
+Ici, si l’utilisateur sélectionne dans ‘match’ touts les matchs d’une certaine équipe, au sein de la classe équipe run_menu fera appel à la méthode suivante, et les résultats s’afficheront dans le terminal :
+
+
+Pour les graphiques, on fait appel au fichier GraphiqueSport, qui contient des fonctions permettant de construire des graphiques à l’aide des librairies pandas, numpy ainsi que matplotlyb.
+Il existe des graphiques spécifiques pour chaque sport afin de mettre en avant des statistiques adaptées aux données disponibles. Par exemple, pour le football, certains graphiques représentent le nombre de buts par journée ou la comparaison entre attaque et défense des équipes, là ou pour le basketball, des visualisations sont réalisées sur la distribution des scores ou les joueurs réalisant le plus de rebonds.
+Il existe aussi une fonction permettant à l’utilisateur d’ajouter lui-même des résultats de match. Cette fonctionnalité passe par la classe GestionResultats, qui permet de sauvegarder de nouveaux matchs saisis directement depuis le terminal. L’utilisateur renseigne les informations nécessaires, comme le sport, la date, les équipes concernées ainsi que les scores du match. Ces nouvelles données sont ensuite enregistrées dans un fichier CSV situé dans data/resultats/nouveaux_matchs.csv. Ces nouveaux matchs sont donc par la suite utilisés lors des calculs des statistiques.
 
 # III - Les résultats
 
