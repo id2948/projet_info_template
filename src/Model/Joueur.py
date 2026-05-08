@@ -115,6 +115,8 @@ class Joueur:
                 print("  3  Filtrer par circuit  (ATP / WTA)")
             else:
                 print("  2  Chercher les joueurs par pays")
+                print("  3  Chercher les joueurs par position")
+                print("  5  Chercher les joueurs par équipe")
             print("  4  Statistiques des joueurs")
             print("  0  Retour")
 
@@ -145,11 +147,13 @@ class Joueur:
                     resultats = [j for j in joueurs if j.equipe == circuit]
                     Joueur._afficher(resultats)
                 else:
-                    print("  Option non disponible pour ce sport.")
+                    Joueur._chercher_par_position(joueurs)
             elif choix == "4":
                 from src.loader.JoueurLoader import JoueurLoader
 
                 JoueurLoader().afficher_stats(joueurs, sport)
+            elif choix == "5":
+                Joueur._chercher_par_equipe(joueurs)
             else:
                 print("  Choix invalide.")
 
@@ -237,7 +241,12 @@ class Joueur:
         """
         equipe = input("  Nom de l'équipe : ").strip()
         resultats = [
-            j for j in joueurs if j.equipe and equipe.lower() in j.equipe.lower()
+            j for j in joueurs if (
+                (j.equipe and equipe.lower() in j.equipe.lower())
+                or (j.equipes_historique and any(
+                    equipe.lower() in eq.lower() for eq in j.equipes_historique
+                ))
+            )
         ]
         Joueur._afficher(resultats)
 

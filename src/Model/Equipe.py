@@ -80,16 +80,6 @@ class Equipe:
         else:
             self.defaites += 1
 
-    def __str__(self):
-        return (f"{self.nom:<30} | "
-                f"MJ:{self.matchs_joues:>3} V:{self.victoires:>3} "
-                f"N:{self.nuls:>3} D:{self.defaites:>3} | "
-                f"Pour:{self.score_pour:>6.0f} Contre:{self.score_contre:>6.0f} "
-                f"Diff:{self.difference_score:>+7.0f} | Pts:{self.points:>4}")
-
-    def __repr__(self):
-        return f"Equipe(nom={self.nom}, sport={self.sport}, pts={self.points})"
-
     @staticmethod
     def run_menu(sport: Sport) -> None:
         """Affiche le menu de statistiques d'équipe pour un sport donné.

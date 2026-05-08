@@ -112,16 +112,3 @@ def test_winrate_zero_matchs():
     assert e.winrate == 0.0
 
 
-def test_str_contient_nom_et_stats():
-    e = Equipe("PSG", "football")
-    e.ajouter_match(2, 0)
-    s = str(e)
-    assert "PSG" in s
-    assert "1" in s
-
-
-def test_repr_contient_nom_et_sport():
-    e = Equipe("PSG", "football")
-    r = repr(e)
-    assert "PSG" in r
-    assert "football" in r
