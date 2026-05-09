@@ -1,5 +1,3 @@
-"""Diagramme BW vertical lisible — 7 branches dans une seule section."""
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -12,7 +10,6 @@ import os
 BG = "#FFFFFF"
 LW = 1.0
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 
 def box(ax, cx, cy, w, h, texte, fs=7.5, bold=False, dash=False):
@@ -149,20 +146,18 @@ def vline(ax, x, y1, y2, lw=LW):
     ax.plot([x, x], [y1, y2], color="#111111", lw=lw, zorder=2)
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 W = 14
-# y_top  = 35.7 (titre), y_bot calculé après dessin
-# On crée d'abord avec H provisoire, on recadre à la fin
-Y_TOP = 36.0
-Y_BOT = 25.0  # sera recalculé
-H_COORD = Y_TOP - Y_BOT  # ≈ 11 unités de contenu
 
-fig, ax = plt.subplots(figsize=(W, W * H_COORD / W))  # aspect carré approx
+Y_TOP = 36.0
+Y_BOT = 25.0  
+H_COORD = Y_TOP - Y_BOT  
+
+fig, ax = plt.subplots(figsize=(W, W * H_COORD / W))  
 ax.set_xlim(0, W)
 ax.axis("off")
 fig.patch.set_facecolor(BG)
 
-# ── Titre ─────────────────────────────────────────────────────────────────────
+
 ax.text(
     W / 2,
     35.5,
@@ -173,9 +168,7 @@ ax.text(
     color="#111111",
 )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 1 — NAVIGATION  (y 31–34.8)
-# ══════════════════════════════════════════════════════════════════════════════
+
 CX = W / 2
 
 oval(ax, CX, 34.60, 1.4, 0.46, "Départ", fs=8.5)
@@ -183,23 +176,23 @@ arr(ax, CX, 34.37, CX, 34.00)
 
 box_filled(ax, CX, 33.72, 3.4, 0.50, "Menu principal\n(choix du sport)", fs=8.5)
 
-# → q / Fin
+
 arr(ax, CX - 1.70, 33.72, CX - 3.10, 33.72)
 lbl(ax, CX - 3.85, 33.82, "q", fs=8)
 oval(ax, CX - 4.15, 33.72, 0.90, 0.42, "Fin", fs=8)
 
-# Décision sport reconnu
+
 diamond(ax, CX, 33.18)
 arr(ax, CX, 33.47, CX, 33.47 - 0.01)
 lbl(ax, CX + 0.48, 33.18, "sport\nreconnu ?", fs=7)
-# Non → boucle
+
 vline(ax, CX - 1.80, 33.18, 33.98)
 hline(ax, CX - 1.80, CX - 0.42, 33.18)
 hline(ax, CX - 1.80, CX - 1.70, 33.98)
 lbl(ax, CX - 2.95, 33.55, "Non", fs=7, col="#B71C1C")
 lbl(ax, CX + 0.08, 32.82, "Oui", fs=7, col="#1B5E20")
 
-# → 5 sports
+
 arr(ax, CX, 32.90, CX, 32.58)
 SX = [2.0, 4.3, 7.0, 9.7, 12.0]
 for sx in SX:
@@ -209,13 +202,13 @@ SPORTS = ["basketball", "football", "LOL", "tennis", "volley"]
 for sx, sp in zip(SX, SPORTS):
     box(ax, sx, 31.85, 2.05, 0.42, sp, fs=8, bold=True)
 
-# retour sport → menu principal (boucle côté droit)
+
 vline(ax, 13.20, 31.85, 33.98)
 hline(ax, 12.03, 13.20, 31.85)
 hline(ax, 13.20, CX + 1.70, 33.98)
 lbl(ax, 13.25, 32.85, "retour", fs=7, col="#546E7A")
 
-# → menu catégorie
+
 for sx in SX:
     arr(ax, sx, 31.64, CX, 31.30)
 
@@ -230,14 +223,11 @@ box_filled(
     fs=8,
 )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION 2 — 7 BRANCHES EN COLONNES  (y 0.5–30.5)
-# Centres X : 1.0  3.0  5.0  7.0  9.0  11.0  13.0
-# ══════════════════════════════════════════════════════════════════════════════
-BW = 1.78  # largeur boîte branche
-BH = 0.42  # hauteur boîte action
-DY = 0.60  # espacement vertical entre items
-TOP_Y = 30.60  # y de la tête de branche
+
+BW = 1.78  
+BH = 0.42  
+DY = 0.60  
+TOP_Y = 30.60  
 CXS = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0]
 
 BRANCHES = [
@@ -314,12 +304,12 @@ BRANCHES = [
     ),
 ]
 
-# Flèches menu catégorie → têtes de branches
+
 for cx in CXS:
     arr(ax, CX, 30.77, cx, TOP_Y + 0.25)
 
 for cx, (cat, subtitle, items) in zip(CXS, BRANCHES):
-    # Tête de branche
+    
     box(ax, cx, TOP_Y, BW, 0.44, cat, fs=8, bold=True)
     ax.text(
         cx,
@@ -331,20 +321,17 @@ for cx, (cat, subtitle, items) in zip(CXS, BRANCHES):
         color="#555555",
         zorder=4,
     )
-
-    # Items
+  
     for i, txt in enumerate(items):
         yi = TOP_Y - 0.68 - i * DY
         arr(ax, cx, TOP_Y - 0.44 - i * DY, cx, yi + BH / 2)
         box(ax, cx, yi, BW, BH, txt, fs=7)
-
-    # Boîte sortie (dashed)
+   
     y_last = TOP_Y - 0.68 - (len(items) - 1) * DY
     y_out = y_last - BH / 2 - 0.14
     arr(ax, cx, y_last - BH / 2, cx, y_out)
 
     if cat == "graphiques":
-        # Décision dans graphiques
         diamond(ax, cx, y_out, w=0.38, h=0.24)
         lbl(ax, cx + 0.42, y_out, "valide ?", fs=6.5)
         y_save = y_out - 0.55
@@ -357,14 +344,12 @@ for cx, (cat, subtitle, items) in zip(CXS, BRANCHES):
         lbl(ax, cx - 1.88, y_out + 0.12, "Non\n→retour", fs=6.2, col="#B71C1C")
 
     elif cat == "ajouter":
-        # Décision valide ?
         diamond(ax, cx, y_out, w=0.38, h=0.24)
         lbl(ax, cx + 0.42, y_out, "valide ?", fs=6.5)
         y_save = y_out - 0.55
         arr(ax, cx, y_out - 0.24, cx, y_save + BH / 2)
         lbl(ax, cx + 0.08, y_out - 0.38, "Oui", fs=6.5, col="#1B5E20")
         box(ax, cx, y_save, BW, BH, "→ nouveaux_matchs.csv", fs=6.5, dash=True)
-        # Non → annulation (à droite)
         box(ax, cx + 1.0, y_out, BW - 0.3, 0.32, "Annulation", fs=6.5, dash=True)
         hline(ax, cx + 0.38, cx + 1.0, y_out)
         lbl(ax, cx + 0.42, y_out + 0.20, "Non", fs=6.2, col="#B71C1C")
@@ -374,7 +359,7 @@ for cx, (cat, subtitle, items) in zip(CXS, BRANCHES):
         box(ax, cx, y_out, BW, BH, "Affichage\nterminal", fs=7, dash=True)
         y_bottom = y_out - BH / 2
 
-    # Flèche retour → menu catégorie (via ligne verticale sur le bord)
+
     side = cx - BW / 2 - 0.08 if cx <= CX else cx + BW / 2 + 0.08
     rad = 0.3 if cx <= CX else -0.3
     arr(ax, cx, y_bottom - 0.04, cx, y_bottom - 0.20, lw=0.7)
@@ -389,13 +374,11 @@ for cx, (cat, subtitle, items) in zip(CXS, BRANCHES):
         zorder=4,
     )
 
-# ── Note bas de page ──────────────────────────────────────────────────────────
-# ── Calcul dynamique du bas du contenu ───────────────────────────────────────
-# Branche la plus longue : 5 items + sortie + décision + sauvegarde + retour
-y_last_long = TOP_Y - 0.68 - 4 * DY  # centre dernier item (5e)
-y_out_long = y_last_long - BH / 2 - 0.14  # centre sortie/décision
-y_save_long = y_out_long - 0.55  # centre boîte sauvegarde
-y_content_bot = y_save_long - BH / 2 - 0.40  # bas + retour texte
+
+y_last_long = TOP_Y - 0.68 - 4 * DY  
+y_out_long = y_last_long - BH / 2 - 0.14 
+y_save_long = y_out_long - 0.55  
+y_content_bot = y_save_long - BH / 2 - 0.40  
 
 NOTE_Y = y_content_bot - 0.45
 ax.text(
@@ -410,11 +393,11 @@ ax.text(
     bbox=dict(boxstyle="round,pad=0.35", fc="#F5F5F5", ec="#BBBBBB", lw=0.8),
 )
 
-# Recadrer y_lim sur le contenu exact — la figsize est ajustée en conséquence
+
 Y_TOP_REAL = 36.0
 Y_BOT_REAL = NOTE_Y - 0.50
 ax.set_ylim(Y_BOT_REAL, Y_TOP_REAL)
-# Ajuster la hauteur physique de la figure proportionnellement à la plage visible
+
 fig.set_size_inches(W, W * (Y_TOP_REAL - Y_BOT_REAL) / W)
 
 plt.tight_layout(pad=0.3)

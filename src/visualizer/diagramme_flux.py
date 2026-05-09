@@ -1,5 +1,3 @@
-"""Diagramme de flux de l'application"""
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -8,14 +6,14 @@ from matplotlib.patches import FancyBboxPatch, Ellipse
 import os
 
 BG = "#FFFFFF"
-FC = "#FFFFFF"  # fill boîtes
-EC = "#222222"  # bord boîtes
-TXT = "#111111"  # texte
-ARR = "#333333"  # flèches
-LBL = "#333333"  # labels flèches
+FC = "#FFFFFF"  
+EC = "#222222"  
+TXT = "#111111"  
+ARR = "#333333"  
+LBL = "#333333"  
 LW = 1.2
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 
 def box(ax, cx, cy, w, h, texte, fs=8.5, bold=False):
@@ -83,7 +81,7 @@ def arr(ax, x1, y1, x2, y2, label="", rad=0.0, label_side="mid", lfs=7.2, lw=LW)
             mx = (x1 + x2) / 2
             my = (y1 + y2) / 2
             dx, dy = 0.0, 0.0
-            if abs(x2 - x1) < 0.01:  # flèche verticale → décaler à droite
+            if abs(x2 - x1) < 0.01: 
                 dx = 0.12
         elif label_side == "left":
             mx = (x1 + x2) / 2
@@ -122,7 +120,6 @@ def label_on_arrow(ax, x, y, texte, fs=7.2, ha="left"):
     )
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 
 fig, ax = plt.subplots(figsize=(14, 20))
 ax.set_xlim(0, 14)
@@ -131,7 +128,6 @@ ax.axis("off")
 fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
 
-# ── Titre ─────────────────────────────────────────────────────────────────────
 ax.text(
     7,
     19.70,
@@ -143,21 +139,16 @@ ax.text(
     color=TXT,
 )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# NIVEAU 0 — DÉPART et MENU PRINCIPAL
-# ══════════════════════════════════════════════════════════════════════════════
 
 oval(ax, 1.4, 19.10, 1.6, 0.50, "Départ", fs=9)
 box(ax, 7.0, 19.10, 4.2, 0.52, "Menu principal\n(choix du sport)", fs=9, bold=True)
 
 arr(ax, 2.2, 19.10, 4.88, 19.10)
 
-# quitter
 arr(ax, 9.1, 19.10, 11.0, 19.10)
 label_on_arrow(ax, 9.18, 19.22, "L'utilisateur saisit « q »", fs=7)
 oval(ax, 11.9, 19.10, 1.6, 0.50, "Fin", fs=9)
 
-# saisie invalide → boucle
 ax.annotate(
     "",
     xy=(6.0, 18.94),
@@ -181,13 +172,9 @@ ax.annotate(
 )
 label_on_arrow(ax, 6.05, 18.58, "Sport non reconnu → re-affichage du menu", fs=7)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# NIVEAU 1 — SÉLECTION DU SPORT (5 branches)
-# ══════════════════════════════════════════════════════════════════════════════
 
 arr(ax, 7.0, 18.84, 7.0, 18.28, label="L'utilisateur saisit un sport valide", lfs=7.2)
 
-# 5 menus sport positionnés en ligne
 SPORTS_X = [1.5, 4.0, 7.0, 10.0, 12.5]
 SPORTS = ["basketball", "football", "LOL", "tennis", "volley"]
 
@@ -197,23 +184,17 @@ for sx, sp in zip(SPORTS_X, SPORTS):
 for sx, sp in zip(SPORTS_X, SPORTS):
     box(ax, sx, 17.42, 2.30, 0.48, f"Menu\n{sp}", fs=8, bold=True)
 
-# Labels des flèches de sélection sport
 label_on_arrow(ax, 1.55, 17.95, "basketball", fs=6.8, ha="left")
 label_on_arrow(ax, 4.05, 17.95, "football", fs=6.8, ha="left")
 label_on_arrow(ax, 7.05, 17.85, "LOL", fs=6.8, ha="left")
 label_on_arrow(ax, 9.50, 17.90, "tennis", fs=6.8, ha="left")
 label_on_arrow(ax, 11.80, 17.92, "volley", fs=6.8, ha="left")
 
-# Représentation unifiée → on continue avec un seul menu catégorie
 for sx in SPORTS_X:
     arr(ax, sx, 17.18, 7.0, 16.70, lw=0.9)
 label_on_arrow(
     ax, 7.08, 17.05, "L'utilisateur choisit une catégorie ou « retour »", fs=7.0
 )
-
-# ══════════════════════════════════════════════════════════════════════════════
-# NIVEAU 2 — MENU CATÉGORIE
-# ══════════════════════════════════════════════════════════════════════════════
 
 box(
     ax,
@@ -226,7 +207,6 @@ box(
     bold=True,
 )
 
-# retour → menu principal
 ax.annotate(
     "",
     xy=(1.4, 18.85),
@@ -238,14 +218,10 @@ ax.annotate(
 )
 label_on_arrow(ax, 0.05, 17.65, "L'utilisateur saisit\n« retour »", fs=7, ha="left")
 
-# q → fin
 arr(ax, 10.0, 16.46, 11.5, 16.46, lw=1.0)
 label_on_arrow(ax, 10.05, 16.58, "L'utilisateur saisit « q »", fs=7)
 oval(ax, 12.4, 16.46, 1.6, 0.50, "Fin", fs=9)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# NIVEAU 3 — 7 CATÉGORIES en colonnes
-# ══════════════════════════════════════════════════════════════════════════════
 
 CATS_X = [1.0, 2.85, 4.7, 6.55, 8.4, 10.5, 12.6]
 CATS = [
@@ -265,11 +241,7 @@ label_on_arrow(ax, 7.08, 16.08, "catégorie saisie", fs=6.8)
 for cx, cat in zip(CATS_X, CATS):
     box(ax, cx, 15.52, 1.65, 0.48, cat, fs=8, bold=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# NIVEAU 4 — DÉTAIL de 4 branches (match, graphiques, ajouter, retour)
-# ══════════════════════════════════════════════════════════════════════════════
 
-# ── BRANCHE MATCH (x=1.0) ────────────────────────────────────────────────────
 arr(ax, 1.0, 15.28, 1.0, 14.82)
 box(ax, 1.0, 14.58, 1.7, 0.48, "Sous-menu\nMatch", fs=7.8, bold=True)
 
@@ -289,7 +261,6 @@ y_last_m = 14.10 - (len(match_actions) - 1) * 0.52
 arr(ax, 1.0, y_last_m - 0.15, 1.0, y_last_m - 0.50, lw=0.8)
 box(ax, 1.0, y_last_m - 0.65, 1.75, 0.28, "Affichage terminal", fs=6.5)
 
-# retour → menu catégorie
 ax.annotate(
     "",
     xy=(4.0, 16.21),
@@ -301,7 +272,6 @@ ax.annotate(
 )
 label_on_arrow(ax, 1.55, 12.35, "L'utilisateur saisit « retour »", fs=6.8)
 
-# ── BRANCHE GRAPHIQUES (x=8.4) ───────────────────────────────────────────────
 arr(ax, 8.4, 15.28, 8.4, 14.82)
 box(ax, 8.4, 14.58, 1.8, 0.48, "Sous-menu\nGraphiques", fs=7.8, bold=True)
 
@@ -328,7 +298,6 @@ box(ax, 8.4, 10.92, 1.80, 0.44, "Sauvegarde\noutput/*.png", fs=7.3)
 arr(ax, 8.4, 10.70, 8.4, 10.24)
 box(ax, 8.4, 10.02, 1.80, 0.44, "Affichage\ndu chemin fichier", fs=7.3)
 
-# → retour
 ax.annotate(
     "",
     xy=(7.0, 16.21),
@@ -340,7 +309,6 @@ ax.annotate(
 )
 label_on_arrow(ax, 9.0, 13.0, "L'utilisateur saisit\n« retour » ou « 0 »", fs=6.8)
 
-# ── BRANCHE AJOUTER (x=10.5) ─────────────────────────────────────────────────
 arr(ax, 10.5, 15.28, 10.5, 14.82)
 box(ax, 10.5, 14.58, 1.80, 0.48, "Saisie guidée", fs=7.8, bold=True)
 
@@ -358,7 +326,6 @@ for i, step in enumerate(ajouter_steps):
 
 y_last_a = 14.10 - (len(ajouter_steps) - 1) * 0.52
 
-# valide
 arr(ax, 10.5, y_last_a - 0.15, 10.5, y_last_a - 0.55, lw=0.8)
 box(
     ax,
@@ -371,7 +338,6 @@ box(
 )
 label_on_arrow(ax, 10.55, y_last_a - 0.33, "Saisie valide", fs=6.5)
 
-# invalide
 ax.annotate(
     "",
     xy=(12.6, 14.10),
@@ -384,7 +350,6 @@ ax.annotate(
 label_on_arrow(ax, 11.45, 13.65, "Saisie\ninvalide", fs=6.5)
 box(ax, 12.85, 14.10, 1.5, 0.38, "Affichage\nmessage erreur\n→ annulation", fs=6.5)
 
-# retour
 ax.annotate(
     "",
     xy=(7.0, 16.21),
@@ -396,7 +361,6 @@ ax.annotate(
 )
 label_on_arrow(ax, 10.55, 12.00, "L'utilisateur saisit\n« retour »", fs=6.8)
 
-# ── HISTORIQUE (x=12.6) ──────────────────────────────────────────────────────
 arr(ax, 12.6, 15.28, 12.6, 14.82)
 box(ax, 12.6, 14.58, 1.65, 0.48, "Historique", fs=7.8, bold=True)
 arr(ax, 12.6, 14.34, 12.6, 13.88, lw=0.8)
@@ -413,7 +377,6 @@ ax.annotate(
     zorder=2,
 )
 
-# ── Note bas de page ──────────────────────────────────────────────────────────
 ax.text(
     7.0,
     9.20,

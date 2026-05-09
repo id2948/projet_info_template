@@ -1,4 +1,3 @@
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -10,7 +9,6 @@ import os
 
 os.makedirs("output", exist_ok=True)
 
-# ── Style commun ──────────────────────────────────────────────────────────────
 PALETTE = [
     "#2196F3",
     "#F44336",
@@ -160,7 +158,6 @@ def graph_foot_attaque_defense(
     nom = leagues.get(league_id, "Toutes ligues") if league_id else "Toutes ligues"
     _style(ax, f"Attaque vs Défense — {nom}", "Buts marqués", "Buts encaissés")
     ax.legend(fontsize=9)
-    # Labels top 5 attaque
     idx_top = sorted(range(len(pour)), key=lambda i: pour[i], reverse=True)[:5]
     for i in idx_top:
         ax.annotate(
@@ -849,8 +846,6 @@ def run_menu(sport_nom: str) -> None:
             except ValueError as e:
                 print(f"  Erreur : {e}")
             continue
-
-        # Graphiques avec paramètres optionnels pour le football/basket
         try:
             if sport_nom == "football" and choix in ("1", "2", "3"):
                 df_league = pd.read_csv("data/football/league.csv")

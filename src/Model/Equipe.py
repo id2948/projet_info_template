@@ -19,7 +19,6 @@ class Equipe:
         self.sport = sport
         self.abreviation = abreviation
 
-        # Stats communes
         self.matchs_joues = 0
         self.victoires = 0
         self.defaites = 0
@@ -28,13 +27,11 @@ class Equipe:
         self.score_pour = 0.0
         self.score_contre = 0.0
 
-        # Stats basketball
         self.rebonds = 0.0
         self.passes = 0.0
         self.interceptions = 0.0
         self.contres = 0.0
 
-        # Stats LoL
         self.kills = 0
         self.dragons = 0
         self.barons = 0

@@ -1,5 +1,3 @@
-"""Diagramme d'états et de fonctionnement — format A4 portrait, lisible."""
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -8,7 +6,7 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch
 import os
 
-# ── Palette ───────────────────────────────────────────────────────────────────
+
 C_INIT = "#1a1a2e"
 C_MENU = "#0D47A1"
 C_ACT = "#1B5E20"
@@ -20,8 +18,6 @@ BG = "#FFFFFF"
 FW = "#FFFFFF"
 FD = "#212121"
 ARROW = "#37474F"
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 
 def rounded_box(
@@ -39,7 +35,6 @@ def rounded_box(
         zorder=3,
     )
     ax.add_patch(rect)
-    # Trait séparateur sous le titre
     n_total = 1 + len(lines)
     row_h = h / n_total
     ty = cy + h / 2 - row_h / 2
@@ -163,7 +158,6 @@ def band(ax, y0, h, label, color="#F5F5F5", ec="#CFD8DC"):
     )
 
 
-# ══════════════════════════════════════════════════════════════════════════════
 fig, ax = plt.subplots(figsize=(14, 22))
 ax.set_xlim(0, 14)
 ax.set_ylim(0, 22)
@@ -171,7 +165,6 @@ ax.axis("off")
 fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
 
-# ── Titre ─────────────────────────────────────────────────────────────────────
 ax.text(
     7,
     21.65,
@@ -192,16 +185,11 @@ ax.text(
     color="#546E7A",
 )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION A — NAVIGATION PRINCIPALE
-# ══════════════════════════════════════════════════════════════════════════════
 band(ax, 19.20, 1.80, "A — NAVIGATION PRINCIPALE", "#E3F2FD", "#90CAF9")
 
-# Init
 dot_init(ax, 2.5, 20.80)
 arrow(ax, 2.5, 20.66, 2.5, 20.26)
 
-# Menu Sport
 rounded_box(
     ax,
     2.5,
@@ -215,7 +203,6 @@ rounded_box(
     body_fs=8,
 )
 
-# → q / FIN
 arrow(
     ax,
     4.5,
@@ -230,14 +217,11 @@ arrow(
 dot_end(ax, 5.72, 19.98)
 ax.text(6.0, 19.98, "FIN", fontsize=8.5, color=C_INIT, va="center", fontweight="bold")
 
-# → sport invalide (boucle)
 arrow(ax, 0.5, 19.98, 0.5, 20.50, color=C_ERR, rad=0.0, lw=1.1, ls="dashed")
 ax.text(0.55, 20.24, "invalide", fontsize=7, color=C_ERR, va="center")
 
-# → valide descend
 arrow(ax, 2.5, 19.72, 2.5, 19.42, label="sport valide", label_dx=0.1, label_ha="left")
 
-# Menu Catégorie
 rounded_box(
     ax,
     2.5,
@@ -251,7 +235,6 @@ rounded_box(
     body_fs=7.8,
 )
 
-# → q / FIN
 arrow(
     ax,
     4.8,
@@ -266,7 +249,6 @@ arrow(
 dot_end(ax, 5.72, 19.14)
 ax.text(6.0, 19.14, "FIN", fontsize=8.5, color=C_INIT, va="center", fontweight="bold")
 
-# retour → menu sport
 arrow(
     ax,
     0.5,
@@ -280,12 +262,8 @@ arrow(
     label_dx=0.08,
 )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION B — SOUS-MENUS (rangée 1 : 4 catégories)
-# ══════════════════════════════════════════════════════════════════════════════
 band(ax, 15.00, 3.95, "B — SOUS-MENUS PAR CATÉGORIE", "#E8F5E9", "#A5D6A7")
 
-# Flèche menu catégorie → sous-menus
 arrow(
     ax,
     2.5,
@@ -299,7 +277,6 @@ arrow(
     label_dx=0.1,
 )
 
-# 4 boîtes rangée 1
 R1Y = 16.70
 R1_BOXES = [
     (
@@ -352,7 +329,6 @@ for cx, title, lines, col in R1_BOXES:
     bh = 0.40 + len(lines) * 0.30
     by = R1Y - bh / 2 + 0.38
     rounded_box(ax, cx, by, 2.65, bh, title, lines, col, title_fs=9.5, body_fs=8)
-    # sortie affichage
     note_y = by - bh / 2 - 0.20
     ax.text(
         cx,
@@ -364,7 +340,6 @@ for cx, title, lines, col in R1_BOXES:
         color=C_OUT,
         bbox=dict(boxstyle="round,pad=0.18", fc="#E8F5E9", ec="#66BB6A", lw=0.8),
     )
-    # retour
     arrow(ax, cx, note_y - 0.18, cx, note_y - 0.45, color="#546E7A", lw=1.0)
     ax.text(
         cx,
@@ -376,9 +351,6 @@ for cx, title, lines, col in R1_BOXES:
         color="#546E7A",
     )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION C — SOUS-MENUS (rangée 2 : 3 catégories)
-# ══════════════════════════════════════════════════════════════════════════════
 band(ax, 10.00, 4.75, "C — CATÉGORIES SPÉCIALES", "#EDE7F6", "#CE93D8")
 
 R2Y = 12.80
@@ -425,7 +397,6 @@ for cx, title, lines, col in R2_BOXES:
     bh = 0.42 + len(lines) * 0.31
     by = R2Y - bh / 2 + 0.42
     rounded_box(ax, cx, by, 2.80, bh, title, lines, col, title_fs=9.5, body_fs=8.0)
-    # sorties spécifiques
     note_y = by - bh / 2 - 0.20
     if "GRAPHIQUES" in title:
         ax.text(
@@ -471,9 +442,6 @@ for cx, title, lines, col in R2_BOXES:
         color="#546E7A",
     )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION D — COUCHE DONNÉES
-# ══════════════════════════════════════════════════════════════════════════════
 band(ax, 6.60, 3.15, "D — COUCHE DONNÉES CSV", "#ECEFF1", "#90A4AE")
 
 data = [
@@ -524,9 +492,6 @@ for xd, folder, content in data:
         linespacing=1.4,
     )
 
-# ══════════════════════════════════════════════════════════════════════════════
-# SECTION E — SORTIES
-# ══════════════════════════════════════════════════════════════════════════════
 band(ax, 3.90, 2.45, "E — SORTIES DE L'APPLICATION", "#E0F2F1", "#80CBC4")
 
 rounded_box(
@@ -567,7 +532,6 @@ rounded_box(
     body_fs=8.2,
 )
 
-# ── Flèches de lecture CSV (sections B/C → données) ─────────────────────────
 for xsrc in [1.65, 4.65, 7.65, 11.0, 2.5, 7.0, 11.8]:
     ax.annotate(
         "",
@@ -577,7 +541,6 @@ for xsrc in [1.65, 4.65, 7.65, 11.0, 2.5, 7.0, 11.8]:
         zorder=2,
     )
 
-# Flèche écriture ajouter → resultats
 ax.annotate(
     "",
     xy=(12.7, 9.50),
@@ -587,7 +550,6 @@ ax.annotate(
 )
 ax.text(10.2, 9.92, "écriture CSV", fontsize=7.5, color="#BF360C", ha="center")
 
-# Flèches sections E (sorties) ← données (lecture)
 ax.annotate(
     "",
     xy=(3.5, 6.85),
@@ -601,7 +563,6 @@ ax.annotate(
     arrowprops=dict(arrowstyle="-|>", color="#B0BEC5", lw=0.9, linestyle="dashed"),
 )
 
-# Note intégration automatique
 ax.text(
     7.0,
     3.65,
@@ -614,7 +575,6 @@ ax.text(
     bbox=dict(boxstyle="round,pad=0.35", fc="#ECEFF1", ec="#90A4AE", lw=1.0),
 )
 
-# ── Légende ───────────────────────────────────────────────────────────────────
 légende = [
     (C_MENU, "Menu (état composite)"),
     (C_ACT, "Action / affichage terminal"),

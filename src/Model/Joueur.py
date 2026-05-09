@@ -152,8 +152,7 @@ class Joueur:
                 from src.loader.JoueurLoader import JoueurLoader
 
                 JoueurLoader().afficher_stats(joueurs, sport)
-            elif choix == "4":à
-            
+            elif choix == "4":
                 Joueur._chercher_par_equipe(joueurs)
             else:
                 print("  Choix invalide.")

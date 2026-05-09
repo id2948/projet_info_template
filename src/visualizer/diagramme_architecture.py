@@ -1,5 +1,3 @@
-"""Génère le diagramme d'architecture de l'application sous forme de PNG."""
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -8,14 +6,13 @@ import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import os
 
-# ── Palette ────────────────────────────────────────────────────────────────────
-C_CLI = "#1a1a2e"  # bleu nuit — interface
-C_MODEL = "#16213e"  # bleu foncé — modèles
-C_LOADER = "#0f3460"  # bleu moyen — loaders
-C_VIZ = "#533483"  # violet — visualiseur
-C_ANALYSIS = "#2d6a4f"  # vert — analyse
-C_DATA = "#b5451b"  # rouille — données
-C_SPORT = "#e94560"  # rouge — sport dispatcher
+C_CLI = "#1a1a2e"  
+C_MODEL = "#16213e"  
+C_LOADER = "#0f3460"  
+C_VIZ = "#533483"  
+C_ANALYSIS = "#2d6a4f"  
+C_DATA = "#b5451b" 
+C_SPORT = "#e94560"  
 
 FG = "#ffffff"
 ARROW_COL = "#555555"
@@ -136,7 +133,7 @@ ax.axis("off")
 fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
 
-# ── Titre ─────────────────────────────────────────────────────────────────────
+
 ax.text(
     0.5,
     0.965,
@@ -157,7 +154,7 @@ ax.text(
     color="#555555",
 )
 
-# ── Couche 1 : Interface CLI ───────────────────────────────────────────────────
+
 separator(ax, 0.91, "COUCHE INTERFACE")
 box(
     ax,
@@ -171,7 +168,7 @@ box(
     fontsize=11,
 )
 
-# ── Couche 2 : Sport ──────────────────────────────────────────────────────────
+
 separator(ax, 0.825, "COUCHE DOMAINE")
 box(
     ax,
@@ -185,7 +182,7 @@ box(
     fontsize=10,
 )
 
-# ── Couche 3 : Modèles ────────────────────────────────────────────────────────
+
 separator(ax, 0.755, "COUCHE MODÈLE")
 models = [
     (0.13, "Competition", "nom, sport\nequipes: dict"),
@@ -196,13 +193,13 @@ models = [
 for xm, nom, sub in models:
     box(ax, xm, 0.700, 0.175, 0.075, nom, sub, color=C_MODEL, fontsize=9.5)
 
-# Competition → Equipe
+
 arrow(ax, 0.22, 0.700, 0.24, 0.700, "contient →")
 
-# ── Couche 4 : Loaders ────────────────────────────────────────────────────────
+
 separator(ax, 0.645, "COUCHE LOADER / DISPATCHER")
 
-# Dispatcher central
+
 box(
     ax,
     0.50,
@@ -215,7 +212,7 @@ box(
     fontsize=9,
 )
 
-# Loaders sport-spécifiques
+
 sports_loaders = [
     (0.09, "Football\nLoader"),
     (0.25, "Basketball\nLoader"),
@@ -229,7 +226,7 @@ for xs, lbl in sports_loaders:
     box(ax, xs, 0.533, 0.135, 0.055, lbl, color=color, fontsize=8.5)
     arrow(ax, xs, 0.561, xs, 0.575)
 
-# ── Couche 5 : Visualiseur & Analyse ─────────────────────────────────────────
+
 separator(ax, 0.480, "COUCHE VISUALISATION & ANALYSE")
 box(
     ax,
@@ -255,7 +252,7 @@ box(
     fontsize=9.5,
 )
 
-# ── Couche 6 : Données CSV ────────────────────────────────────────────────────
+
 separator(ax, 0.380, "COUCHE DONNÉES (CSV)")
 data_files = [
     (0.09, "football/", "match · team\nleague · country"),
@@ -269,7 +266,7 @@ for xd, nom, sub in data_files:
     c = C_DATA if "resultats" in nom else "#8b3a0f"
     box(ax, xd, 0.300, 0.155, 0.090, nom, sub, color=c, fontsize=8.5)
 
-# ── Couche 7 : Sorties ────────────────────────────────────────────────────────
+
 separator(ax, 0.220, "SORTIES")
 box(
     ax,
@@ -294,7 +291,6 @@ box(
     fontsize=9,
 )
 
-# ── Flèches verticales principales ───────────────────────────────────────────
 # CLI → Sport
 arrow(ax, 0.5, 0.848, 0.5, 0.818)
 # Sport → Modèles (via CLI)
@@ -318,7 +314,7 @@ arrow(ax, 0.48, 0.848, 0.29, 0.200, "print()")
 # GestionResultats → Data (écriture)
 dashed_arrow(ax, 0.91, 0.506, 0.91, 0.348, "write CSV")
 
-# ── Légende ───────────────────────────────────────────────────────────────────
+
 legend_items = [
     (C_CLI, "Interface / Point d'entrée"),
     (C_SPORT, "Couche domaine (Sport)"),
